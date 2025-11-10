@@ -1,0 +1,268 @@
+MYSQL CONNECTIVITY--
+
+bvcoew@bvcoew-OptiPlex-3000:~$ sudo bash
+[sudo] password for bvcoew: 
+root@bvcoew-OptiPlex-3000:/home/bvcoew# mysql
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.0.42-0ubuntu0.20.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> create user user123@localhost identified by 'User#123';
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> grant privileges on *.* to user123@localhost;
+ERROR 1149 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use
+mysql> grant all privileges on *.* to user123@localhost;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> show databases
+
+=============================================================================================
+
+import java.sql.*;
+import java.util.Scanner;
+
+public class mysqlConnect 
+{
+    static final String URL = "jdbc:mysql://localhost:3306/testdb";
+    static final String USER = "user123";
+    static final String PASS = "User#123";
+
+    public static void main(String[] args) 
+    {
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             Scanner sc = new Scanner(System.in)) 
+        {
+
+            System.out.println("Connected to MySQL successfully!");
+
+            Statement stmt = conn.createStatement();
+
+            // Step 1: Create Employee table if not exists
+            String createTableSQL = "CREATE TABLE IF NOT EXISTS Employee (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY," +
+                    "name VARCHAR(100) NOT NULL," +
+                    "department VARCHAR(50)," +
+                    "salary DOUBLE)";
+            stmt.executeUpdate(createTableSQL);
+
+            boolean exit = false;
+            while (!exit) {
+                System.out.println("\n===== Employee Menu =====");
+                System.out.println("1. Add Employee");
+                System.out.println("2. View All Employees");
+                System.out.println("3. Update Employee Salary");
+                System.out.println("4. Delete Employee");
+                System.out.println("5. Exit");
+                System.out.print("Choose an option: ");
+
+                int choice = sc.nextInt();
+                sc.nextLine(); // consume newline
+
+                switch (choice) 
+                {
+                    case 1:
+                        System.out.print("Enter name: ");
+                        String name = sc.nextLine();
+                        System.out.print("Enter department: ");
+                        String dept = sc.nextLine();
+                        System.out.print("Enter salary: ");
+                        double salary = sc.nextDouble();
+                        sc.nextLine();
+
+                        String insertSQL = "INSERT INTO Employee (name, department, salary) VALUES (?, ?, ?)";
+                        try (PreparedStatement ps = conn.prepareStatement(insertSQL)) 
+                        {
+                            ps.setString(1, name);
+                            ps.setString(2, dept);
+                            ps.setDouble(3, salary);
+                            ps.executeUpdate();
+                            System.out.println("Employee added successfully!");
+                        }
+                        break;
+
+                    case 2:
+                        String selectSQL = "SELECT * FROM Employee";
+                        try (ResultSet rs = stmt.executeQuery(selectSQL)) 
+                        {
+                            System.out.println("\nID | Name | Department | Salary");
+                            while (rs.next()) 
+                            {
+                                System.out.printf("%d | %s | %s | %.2f%n",
+                                        rs.getInt("id"),
+                                        rs.getString("name"),
+                                        rs.getString("department"),
+                                        rs.getDouble("salary"));
+                            }
+                        }
+                        break;
+
+                    case 3:
+                        System.out.print("Enter Employee ID to update salary: ");
+                        int updateId = sc.nextInt();
+                        System.out.print("Enter new salary: ");
+                        double newSalary = sc.nextDouble();
+                        sc.nextLine();
+
+                        String updateSQL = "UPDATE Employee SET salary = ? WHERE id = ?";
+                        try (PreparedStatement ps = conn.prepareStatement(updateSQL)) 
+                        {
+                            ps.setDouble(1, newSalary);
+                            ps.setInt(2, updateId);
+                            int rows = ps.executeUpdate();
+                            if (rows > 0) System.out.println("Salary updated!");
+                            else System.out.println("Employee not found!");
+                        }
+                        break;
+
+                    case 4:
+                        System.out.print("Enter Employee ID to delete: ");
+                        int deleteId = sc.nextInt();
+                        sc.nextLine();
+
+                        String deleteSQL = "DELETE FROM Employee WHERE id = ?";
+                        try (PreparedStatement ps = conn.prepareStatement(deleteSQL)) 
+                        {
+                            ps.setInt(1, deleteId);
+                            int rows = ps.executeUpdate();
+                            if (rows > 0) System.out.println("Employee deleted!");
+                            else System.out.println("Employee not found!");
+                        }
+                        break;
+
+                    case 5:
+                        exit = true;
+                        System.out.println("Exiting...");
+                        break;
+
+                    default:
+                        System.out.println("Invalid choice!");
+                        break;
+                }
+            }
+
+        } 
+        catch (SQLException e) 
+        {
+            e.printStackTrace();
+        }
+    }
+}
+
+============================================================================================================
+
+MONGODB CONNECTIVITY
+
+import java.util.Scanner;
+
+import com.mongodb.*;
+
+public class mongoConnect 
+{
+
+    public static void main(String[] args) 
+    {
+        Scanner sc = new Scanner(System.in);
+        MongoClient mongoClient = null;
+
+        try 
+        {
+            MongoClientURI uri = new MongoClientURI("mongodb://localhost:27017");
+            mongoClient = new MongoClient(uri);
+            DB db = mongoClient.getDB("testdb");
+            DBCollection collection = db.getCollection("users");
+
+            int choice;
+            do 
+            {
+                System.out.println("\n===== MongoDB Menu =====");
+                System.out.println("1. Insert Document");
+                System.out.println("2. Display All Documents");
+                System.out.println("3. Update a Document");
+                System.out.println("4. Delete a Document");
+                System.out.println("5. Exit");
+                System.out.print("Enter your choice: ");
+                choice = sc.nextInt();
+                sc.nextLine(); // consume newline
+
+                switch (choice) 
+                {
+                    case 1:
+                        System.out.print("Enter name: ");
+                        String name = sc.nextLine();
+                        System.out.print("Enter age: ");
+                        int age = sc.nextInt();
+                        sc.nextLine(); // consume newline
+                        System.out.print("Enter city: ");
+                        String city = sc.nextLine();
+
+                        BasicDBObject doc = new BasicDBObject();
+                        doc.put("name", name);
+                        doc.put("age", age);
+                        doc.put("city", city);
+                        collection.insert(doc);
+                        System.out.println("Document inserted successfully!");
+                        break;
+
+                    case 2:
+                        System.out.println("\nDocuments in Collection:");
+                        DBCursor cursor = collection.find();
+                        while (cursor.hasNext()) 
+                        {
+                            System.out.println(cursor.next());
+                        }
+                        break;
+
+                    case 3:
+                        System.out.print("Enter name to update: ");
+                        String oldName = sc.nextLine();
+                        System.out.print("Enter new city: ");
+                        String newCity = sc.nextLine();
+
+                        BasicDBObject query = new BasicDBObject("name", oldName);
+                        BasicDBObject update = new BasicDBObject("$set", new BasicDBObject("city", newCity));
+                        collection.update(query, update);
+                        System.out.println("Document updated!");
+                        break;
+
+                    case 4:
+                        System.out.print("Enter name to delete: ");
+                        String delName = sc.nextLine();
+                        BasicDBObject deleteQuery = new BasicDBObject("name", delName);
+                        collection.remove(deleteQuery);
+                        System.out.println("Document deleted!");
+                        break;
+
+                    case 5:
+                        System.out.println("Exiting...");
+                        break;
+
+                    default:
+                        System.out.println("Invalid choice! Try again.");
+                        break;
+                }
+            } while (choice != 5);
+
+        } 
+        catch (Exception e) 
+        {
+            e.printStackTrace();
+        } 
+        finally 
+        {
+            if (mongoClient != null) 
+            {
+                mongoClient.close();
+            }
+            sc.close();
+        }
+    }
+}

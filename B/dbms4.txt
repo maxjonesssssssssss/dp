@@ -1,0 +1,177 @@
+mysql> use mydb;
+Database changed
+
+mysql> select * from course, section where course.course_id = section.section_id;
++-----------+----------+------------+---------+-----------+------------+----------+------+------------+---------+-----------+
+| course_id | title    | dept_name  | credits | course_id | section_id | semester | year | building   | room_no | time_slot |
++-----------+----------+------------+---------+-----------+------------+----------+------+------------+---------+-----------+
+|         1 | OOP      | CSE        |       4 |         1 |          1 | winter   |    3 | South Wing |     105 | 1hr       |
+|         2 | Networks | IT         |       5 |         2 |          2 | summer   |    3 | West Wing  |     210 | 1hr       |
+|         3 | VLSI     | ECE        |       6 |         3 |          3 | winter   |    3 | East Wing  |     108 | 1hr       |
+|         4 | Thermo   | Mechanical |       5 |         4 |          4 | summer   |    3 | North Wing |     305 | 1hr       |
+|         5 | DL       | AI         |       4 |         5 |          5 | summer   |    3 | Central    |     115 | 1hr       |
++-----------+----------+------------+---------+-----------+------------+----------+------+------------+---------+-----------+
+5 rows in set (0.00 sec)
+
+mysql> select * from course inner join section on course.course_id = section.section_id;
++-----------+----------+------------+---------+-----------+------------+----------+------+------------+---------+-----------+
+| course_id | title    | dept_name  | credits | course_id | section_id | semester | year | building   | room_no | time_slot |
++-----------+----------+------------+---------+-----------+------------+----------+------+------------+---------+-----------+
+|         1 | OOP      | CSE        |       4 |         1 |          1 | winter   |    3 | South Wing |     105 | 1hr       |
+|         2 | Networks | IT         |       5 |         2 |          2 | summer   |    3 | West Wing  |     210 | 1hr       |
+|         3 | VLSI     | ECE        |       6 |         3 |          3 | winter   |    3 | East Wing  |     108 | 1hr       |
+|         4 | Thermo   | Mechanical |       5 |         4 |          4 | summer   |    3 | North Wing |     305 | 1hr       |
+|         5 | DL       | AI         |       4 |         5 |          5 | summer   |    3 | Central    |     115 | 1hr       |
++-----------+----------+------------+---------+-----------+------------+----------+------+------------+---------+-----------+
+5 rows in set (0.00 sec)
+
+mysql> select * from instructor right outer join teaches on instructor.id = teaches.id;
++------+--------+------------+---------+------+-----------+------------+----------+------+
+| id   | name   | dept_name  | salary  | id   | course_id | section_id | semester | year |
++------+--------+------------+---------+------+-----------+------------+----------+------+
+|    1 | Ananya | CSE        | 1029000 |    1 |         1 |          1 | winter   |    3 |
+|    2 | Priya  | IT         |  123600 |    2 |         2 |          2 | summer   |    3 |
+|    3 | Rohan  | ECE        |   30990 |    3 |         3 |          3 | winter   |    3 |
+|    4 | Sahil  | Mechanical |   56650 |    4 |         4 |          4 | summer   |    3 |
+|    5 | Kavya  | AI         |  144200 |    5 |         5 |          5 | summer   |    3 |
++------+--------+------------+---------+------+-----------+------------+----------+------+
+5 rows in set (0.00 sec)
+
+mysql> select * from instructor left outer join teaches on instructor.id = teaches.id;
++----+--------+------------+---------+------+-----------+------------+----------+------+
+| id | name   | dept_name  | salary  | id   | course_id | section_id | semester | year |
++----+--------+------------+---------+------+-----------+------------+----------+------+
+|  1 | Ananya | CSE        | 1029000 |    1 |         1 |          1 | winter   |    3 |
+|  2 | Priya  | IT         |  123600 |    2 |         2 |          2 | summer   |    3 |
+|  3 | Rohan  | ECE        |   30990 |    3 |         3 |          3 | winter   |    3 |
+|  4 | Sahil  | Mechanical |   56650 |    4 |         4 |          4 | summer   |    3 |
+|  5 | Kavya  | AI         |  144200 |    5 |         5 |          5 | summer   |    3 |
+|  6 | Neel   | IT         |   38000 | NULL |      NULL |       NULL | NULL     | NULL |
++----+--------+------------+---------+------+-----------+------------+----------+------+
+6 rows in set (0.00 sec)
+
+mysql> select * from course left outer join section on course.course_id = section.section_id;
++-----------+----------+------------+---------+-----------+------------+----------+------+------------+---------+-----------+
+| course_id | title    | dept_name  | credits | course_id | section_id | semester | year | building   | room_no | time_slot |
++-----------+----------+------------+---------+-----------+------------+----------+------+------------+---------+-----------+
+|         1 | OOP      | CSE        |       4 |         1 |          1 | winter   |    3 | South Wing |     105 | 1hr       |
+|         2 | Networks | IT         |       5 |         2 |          2 | summer   |    3 | West Wing  |     210 | 1hr       |
+|         3 | VLSI     | ECE        |       6 |         3 |          3 | winter   |    3 | East Wing  |     108 | 1hr       |
+|         4 | Thermo   | Mechanical |       5 |         4 |          4 | summer   |    3 | North Wing |     305 | 1hr       |
+|         5 | DL       | AI         |       4 |         5 |          5 | summer   |    3 | Central    |     115 | 1hr       |
+|         6 | OS       | IT         |       9 |      NULL |       NULL | NULL     | NULL | NULL       |    NULL | NULL      |
++-----------+----------+------------+---------+-----------+------------+----------+------+------------+---------+-----------+
+6 rows in set (0.00 sec)
+
+mysql> select * from course right outer join section on course.course_id = section.section_id;
++-----------+----------+------------+---------+-----------+------------+----------+------+------------+---------+-----------+
+| course_id | title    | dept_name  | credits | course_id | section_id | semester | year | building   | room_no | time_slot |
++-----------+----------+------------+---------+-----------+------------+----------+------+------------+---------+-----------+
+|         1 | OOP      | CSE        |       4 |         1 |          1 | winter   |    3 | South Wing |     105 | 1hr       |
+|         2 | Networks | IT         |       5 |         2 |          2 | summer   |    3 | West Wing  |     210 | 1hr       |
+|         3 | VLSI     | ECE        |       6 |         3 |          3 | winter   |    3 | East Wing  |     108 | 1hr       |
+|         4 | Thermo   | Mechanical |       5 |         4 |          4 | summer   |    3 | North Wing |     305 | 1hr       |
+|         5 | DL       | AI         |       4 |         5 |          5 | summer   |    3 | Central    |     115 | 1hr       |
++-----------+----------+------------+---------+-----------+------------+----------+------+------------+---------+-----------+
+5 rows in set (0.01 sec)
+
+mysql> select * from course natural join section;
++-----------+----------+------------+---------+------------+----------+------+------------+---------+-----------+
+| course_id | title    | dept_name  | credits | section_id | semester | year | building   | room_no | time_slot |
++-----------+----------+------------+---------+------------+----------+------+------------+---------+-----------+
+|         1 | OOP      | CSE        |       4 |          1 | winter   |    3 | South Wing |     105 | 1hr       |
+|         2 | Networks | IT         |       5 |          2 | summer   |    3 | West Wing  |     210 | 1hr       |
+|         3 | VLSI     | ECE        |       6 |          3 | winter   |    3 | East Wing  |     108 | 1hr       |
+|         4 | Thermo   | Mechanical |       5 |          4 | summer   |    3 | North Wing |     305 | 1hr       |
+|         5 | DL       | AI         |       4 |          5 | summer   |    3 | Central    |     115 | 1hr       |
++-----------+----------+------------+---------+------------+----------+------+------------+---------+-----------+
+5 rows in set (0.00 sec)
+
+mysql> select * from course left join section using(course_id);
++-----------+----------+------------+---------+------------+----------+------+------------+---------+-----------+
+| course_id | title    | dept_name  | credits | section_id | semester | year | building   | room_no | time_slot |
++-----------+----------+------------+---------+------------+----------+------+------------+---------+-----------+
+|         1 | OOP      | CSE        |       4 |          1 | winter   |    3 | South Wing |     105 | 1hr       |
+|         2 | Networks | IT         |       5 |          2 | summer   |    3 | West Wing  |     210 | 1hr       |
+|         3 | VLSI     | ECE        |       6 |          3 | winter   |    3 | East Wing  |     108 | 1hr       |
+|         4 | Thermo   | Mechanical |       5 |          4 | summer   |    3 | North Wing |     305 | 1hr       |
+|         5 | DL       | AI         |       4 |          5 | summer   |    3 | Central    |     115 | 1hr       |
+|         6 | OS       | IT         |       9 |       NULL | NULL     | NULL | NULL       |    NULL | NULL      |
++-----------+----------+------------+---------+------------+----------+------+------------+---------+-----------+
+6 rows in set (0.00 sec)
+
+mysql> select * from course right join section using(course_id);
++-----------+------------+----------+------+------------+---------+-----------+----------+------------+---------+
+| course_id | section_id | semester | year | building   | room_no | time_slot | title    | dept_name  | credits |
++-----------+------------+----------+------+------------+---------+-----------+----------+------------+---------+
+|         1 |          1 | winter   |    3 | South Wing |     105 | 1hr       | OOP      | CSE        |       4 |
+|         2 |          2 | summer   |    3 | West Wing  |     210 | 1hr       | Networks | IT         |       5 |
+|         3 |          3 | winter   |    3 | East Wing  |     108 | 1hr       | VLSI     | ECE        |       6 |
+|         4 |          4 | summer   |    3 | North Wing |     305 | 1hr       | Thermo   | Mechanical |       5 |
+|         5 |          5 | summer   |    3 | Central    |     115 | 1hr       | DL       | AI         |       4 |
++-----------+------------+----------+------+------------+---------+-----------+----------+------------+---------+
+5 rows in set (0.00 sec)
+
+mysql> create view instructor_teaching as 
+select i.name as instructor_name, c.title as course_title, t.section_id, t.semester, t.year 
+from instructor i join teaches t on i.id=t.id 
+join course c on t.course_id = c.course_id;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from instructor_teaching;
++-----------------+--------------+------------+----------+------+
+| instructor_name | course_title | section_id | semester | year |
++-----------------+--------------+------------+----------+------+
+| Ananya          | OOP          |          1 | winter   |    3 |
+| Priya           | Networks     |          2 | summer   |    3 |
+| Rohan           | VLSI         |          3 | winter   |    3 |
+| Sahil           | Thermo       |          4 | summer   |    3 |
+| Kavya           | DL           |          5 | summer   |    3 |
++-----------------+--------------+------------+----------+------+
+5 rows in set (0.00 sec)
+
+mysql> select * from instructor_teaching it 
+join instructor i on it.instructor_name = i.name 
+where i.salary>(select avg(salary) from instructor);
++-----------------+--------------+------------+----------+------+----+--------+-----------+---------+
+| instructor_name | course_title | section_id | semester | year | id | name   | dept_name | salary  |
++-----------------+--------------+------------+----------+------+----+--------+-----------+---------+
+| Ananya          | OOP          |          1 | winter   |    3 |  1 | Ananya | CSE       | 1029000 |
++-----------------+--------------+------------+----------+------+----+--------+-----------+---------+
+1 row in set (0.00 sec)
+
+mysql> select d.dept_name, c.credits from department d 
+join course c on d.dept_name = c.dept_name 
+order by d.budget desc;
++------------+---------+
+| dept_name  | credits |
++------------+---------+
+| IT         |       5 |
+| IT         |       9 |
+| ECE        |       6 |
+| CSE        |       4 |
+| AI         |       4 |
+| Mechanical |       5 |
++------------+---------+
+6 rows in set (0.00 sec)
+
+mysql> select dept_name, building, budget from department 
+where budget>(select avg(budget) from department);
++-----------+------------+----------+
+| dept_name | building   | budget   |
++-----------+------------+----------+
+| IT        | East Wing  | 18000000 |
++-----------+------------+----------+
+1 row in set (0.00 sec)
+
+mysql> select dept_name, count(*) as instructor_count from instructor group by dept_name;
++------------+------------------+
+| dept_name  | instructor_count |
++------------+------------------+
+| AI         |                1 |
+| CSE        |                1 |
+| ECE        |                1 |
+| IT         |                2 |
+| Mechanical |                1 |
++------------+------------------+
+5 rows in set (0.00 sec)

@@ -1,0 +1,86 @@
+mysql> CREATE TABLE marksheet (
+    roll_no INT NOT NULL PRIMARY KEY,
+    student_name VARCHAR(30),
+    total_marks INT
+);
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> CREATE TABLE grade_result (
+    roll_no INT NOT NULL PRIMARY KEY,
+    student_name VARCHAR(30),
+    grade VARCHAR(25)
+);
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> INSERT INTO marksheet (roll_no, student_name, total_marks) VALUES
+(1, 'Aditi', 96),
+(2, 'Ramesh', 82),
+(3, 'Komal', 73),
+(4, 'Vikas', 68),
+(5, 'Sneha', 91),
+(6, 'Amir', 77),
+(7, 'Pooja', 55);
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER $$
+mysql> CREATE PROCEDURE proc_assignGrade()
+    -> BEGIN
+    ->     DECLARE done INT DEFAULT 0;
+    ->     DECLARE r_roll INT;
+    ->     DECLARE r_name VARCHAR(50);
+    ->     DECLARE r_marks INT;
+    ->     DECLARE r_grade VARCHAR(25);
+    -> 
+    ->     DECLARE cur CURSOR FOR 
+    ->         SELECT roll_no, student_name, total_marks FROM marksheet;
+    ->     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    -> 
+    ->     OPEN cur;
+    -> 
+    ->     read_loop: LOOP
+    ->         FETCH cur INTO r_roll, r_name, r_marks;
+    ->         IF done THEN
+    ->             LEAVE read_loop;
+    ->         END IF;
+    -> 
+    ->         -- Grade logic
+    ->         IF r_marks >= 90 THEN
+    ->             SET r_grade = 'Outstanding';
+    ->         ELSEIF r_marks >= 80 THEN
+    ->             SET r_grade = 'Distinction';
+    ->         ELSEIF r_marks >= 70 THEN
+    ->             SET r_grade = 'First Class';
+    ->         ELSEIF r_marks >= 60 THEN
+    ->             SET r_grade = 'Second Class';
+    ->         ELSEIF r_marks >= 40 THEN
+    ->             SET r_grade = 'Pass';
+    ->         ELSE
+    ->             SET r_grade = 'Fail';
+    ->         END IF;
+    -> 
+    ->         INSERT INTO grade_result (roll_no, student_name, grade)
+    ->         VALUES (r_roll, r_name, r_grade);
+    ->     END LOOP;
+    -> 
+    ->     CLOSE cur;
+    -> END$$
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER ;
+
+mysql> CALL proc_assignGrade();
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT * FROM grade_result;
++---------+--------------+--------------+
+| roll_no | student_name | grade        |
++---------+--------------+--------------+
+|       1 | Aditi        | Outstanding  |
+|       2 | Ramesh       | Distinction  |
+|       3 | Komal        | First Class  |
+|       4 | Vikas        | Second Class |
+|       5 | Sneha        | Outstanding  |
+|       6 | Amir         | First Class  |
+|       7 | Pooja        | Pass         |
++---------+--------------+--------------+
+7 rows in set (0.00 sec)

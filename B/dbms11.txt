@@ -1,0 +1,155 @@
+bvcoew@bvcoew-OptiPlex-3000:~$ show mongo
+
+Command 'show' not found, but can be installed with:
+
+sudo apt install mailutils-mh  # version 1:3.7-2.1, or
+sudo apt install mmh           # version 0.4-2
+sudo apt install nmh           # version 1.7.1-6
+
+bvcoew@bvcoew-OptiPlex-3000:~$ sudo mongo
+[sudo] password for bvcoew: 
+MongoDB shell version v3.6.8
+connecting to: mongodb://127.0.0.1:27017
+Implicit session: session { "id" : UUID("4baaf556-48b5-48ee-8f80-d8693f634343") }
+MongoDB server version: 3.6.8
+Server has startup warnings: 
+2025-10-10T12:03:50.459+0530 I STORAGE  [initandlisten] 
+2025-10-10T12:03:50.459+0530 I STORAGE  [initandlisten] ** WARNING: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine
+2025-10-10T12:03:50.459+0530 I STORAGE  [initandlisten] **          See http://dochub.mongodb.org/core/prodnotes-filesystem
+2025-10-10T12:03:50.839+0530 I CONTROL  [initandlisten] 
+2025-10-10T12:03:50.839+0530 I CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2025-10-10T12:03:50.839+0530 I CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+2025-10-10T12:03:50.839+0530 I CONTROL  [initandlisten] 
+> use productDB
+switched to db productDB
+
+> db.products.insertMany([
+...   { name: "Laptop", type: "Electronics", city: "Pune", cost: 55000 },
+...   { name: "Mouse", type: "Computer Accessories", city: "Mumbai", cost: 1200 },
+...   { name: "Keyboard", type: "Computer Accessories", city: "Delhi", cost: 1500 },
+...   { name: "Tablet", type: "Electronics", city: "Bangalore", cost: 22000 },
+...   { name: "Monitor", type: "Electronics", city: "Chennai", cost: 17000 },
+...   { name: "Charger", type: "Mobile Accessories", city: "Hyderabad", cost: 900 },
+...   { name: "Pendrive", type: "Computer Accessories", city: "Mumbai", cost: 800 },
+...   { name: "SSD", type: "Computer Accessories", city: "Pune", cost: 3500 },
+...   { name: "xyz", type: "Computer Accessories", city: "Delhi", cost: 1100 }
+... ])
+{
+	"acknowledged" : true,
+	"insertedIds" : [
+		ObjectId("68e9a5321a92f1012ab0e534"),
+		ObjectId("68e9a5321a92f1012ab0e535"),
+		ObjectId("68e9a5321a92f1012ab0e536"),
+		ObjectId("68e9a5321a92f1012ab0e537"),
+		ObjectId("68e9a5321a92f1012ab0e538"),
+		ObjectId("68e9a5321a92f1012ab0e539"),
+		ObjectId("68e9a5321a92f1012ab0e53a"),
+		ObjectId("68e9a5321a92f1012ab0e53b"),
+		ObjectId("68e9a5321a92f1012ab0e53c")
+	]
+}
+
+> db.products.find().pretty()
+{
+	"name" : "Laptop", "type" : "Electronics", "city" : "Pune", "cost" : 55000
+}
+{
+	"name" : "Mouse", "type" : "Computer Accessories", "city" : "Mumbai", "cost" : 1200
+}
+{
+	"name" : "Keyboard", "type" : "Computer Accessories", "city" : "Delhi", "cost" : 1500
+}
+{
+	"name" : "Tablet", "type" : "Electronics", "city" : "Bangalore", "cost" : 22000
+}
+{
+	"name" : "Monitor", "type" : "Electronics", "city" : "Chennai", "cost" : 17000
+}
+{
+	"name" : "Charger", "type" : "Mobile Accessories", "city" : "Hyderabad", "cost" : 900
+}
+{
+	"name" : "Pendrive", "type" : "Computer Accessories", "city" : "Mumbai", "cost" : 800
+}
+{
+	"name" : "SSD", "type" : "Computer Accessories", "city" : "Pune", "cost" : 3500
+}
+{
+	"name" : "xyz", "type" : "Computer Accessories", "city" : "Delhi", "cost" : 1100
+}
+
+> db.products.find({}, { name: 1, _id: 0 })
+{ "name" : "Laptop" }
+{ "name" : "Mouse" }
+{ "name" : "Keyboard" }
+{ "name" : "Tablet" }
+{ "name" : "Monitor" }
+{ "name" : "Charger" }
+{ "name" : "Pendrive" }
+{ "name" : "SSD" }
+{ "name" : "xyz" }
+
+> db.products.createIndex({ name: 1 })
+{
+	"numIndexesBefore" : 1,
+	"numIndexesAfter" : 2,
+	"ok" : 1
+}
+
+> db.products.find({ name: "xyz" })
+{ "name" : "xyz", "type" : "Computer Accessories", "city" : "Delhi", "cost" : 1100 }
+
+> db.products.createIndex({ city: 1 })
+{
+	"numIndexesBefore" : 2,
+	"numIndexesAfter" : 3,
+	"ok" : 1
+}
+
+> db.products.getIndexes()
+[
+	{ "v" : 2, "key" : { "_id" : 1 }, "name" : "_id_" },
+	{ "v" : 2, "key" : { "name" : 1 }, "name" : "name_1" },
+	{ "v" : 2, "key" : { "city" : 1 }, "name" : "city_1" }
+]
+
+> db.products.dropIndex({ city: 1 })
+{ "nIndexesWas" : 3, "ok" : 1 }
+
+> db.products.aggregate([{ $sort: { name: 1 } }])
+{ "name" : "Charger", "type" : "Mobile Accessories", "city" : "Hyderabad", "cost" : 900 }
+{ "name" : "Keyboard", "type" : "Computer Accessories", "city" : "Delhi", "cost" : 1500 }
+{ "name" : "Laptop", "type" : "Electronics", "city" : "Pune", "cost" : 55000 }
+{ "name" : "Monitor", "type" : "Electronics", "city" : "Chennai", "cost" : 17000 }
+{ "name" : "Mouse", "type" : "Computer Accessories", "city" : "Mumbai", "cost" : 1200 }
+{ "name" : "Pendrive", "type" : "Computer Accessories", "city" : "Mumbai", "cost" : 800 }
+{ "name" : "SSD", "type" : "Computer Accessories", "city" : "Pune", "cost" : 3500 }
+{ "name" : "Tablet", "type" : "Electronics", "city" : "Bangalore", "cost" : 22000 }
+{ "name" : "xyz", "type" : "Computer Accessories", "city" : "Delhi", "cost" : 1100 }
+
+> db.products.aggregate([
+...   { $match: { city: "Mumbai" } },
+...   { $group: { _id: { type: "$type", name: "$name" }, total: { $sum: 1 } } }
+... ])
+{ "_id" : { "type" : "Computer Accessories", "name" : "Mouse" }, "total" : 1 }
+{ "_id" : { "type" : "Computer Accessories", "name" : "Pendrive" }, "total" : 1 }
+
+> db.products.aggregate([
+...   { $group: { _id: null, minCost: { $min: "$cost" }, maxCost: { $max: "$cost" } } }
+... ])
+{ "_id" : null, "minCost" : 800, "maxCost" : 55000 }
+
+> db.products.find({ city: "Mumbai", type: "Computer Accessories" })
+{ "name" : "Mouse", "type" : "Computer Accessories", "city" : "Mumbai", "cost" : 1200 }
+{ "name" : "Pendrive", "type" : "Computer Accessories", "city" : "Mumbai", "cost" : 800 }
+
+> db.products.find({}, { name: 1, city: 1, _id: 0 })
+{ "name" : "Laptop", "city" : "Pune" }
+{ "name" : "Mouse", "city" : "Mumbai" }
+{ "name" : "Keyboard", "city" : "Delhi" }
+{ "name" : "Tablet", "city" : "Bangalore" }
+{ "name" : "Monitor", "city" : "Chennai" }
+{ "name" : "Charger", "city" : "Hyderabad" }
+{ "name" : "Pendrive", "city" : "Mumbai" }
+{ "name" : "SSD", "city" : "Pune" }
+{ "name" : "xyz", "city" : "Delhi" }

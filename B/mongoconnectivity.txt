@@ -1,0 +1,48 @@
+package mongodb;
+
+import com.mongodb.MongoClient;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.DBCursor;
+
+public class cconmongo {
+    public static void main(String[] args) {
+        try {
+           
+            MongoClient mongoClient = new MongoClient("localhost", 27017);
+
+            DB db = mongoClient.getDB("testdb");
+
+      
+            DBCollection collection = db.getCollection("testcollection");
+
+            BasicDBObject doc = new BasicDBObject("name", "MongoDB")
+                    .append("type", "database")
+                    .append("count", 1);
+
+
+            collection.insert(doc);
+            System.out.println("Document inserted successfully!");
+
+           
+            DBCursor cursor = collection.find();
+            if (cursor.hasNext()) {
+                DBObject myDoc = cursor.next();
+                System.out.println("Fetched document: " + myDoc);
+            }
+            cursor.close();
+
+            mongoClient.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+output:
+Document inserted successfully!
+Fetched document: { "_id" : { "$oid" : "68e8b77117d0ae60565a2de0"} , "name" : "MongoDB" , "type" : "database" , "count" : 1}
+

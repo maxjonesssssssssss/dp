@@ -1,0 +1,74 @@
+mysql> create database empdb;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> use empdb;
+Database changed
+
+mysql> create table Employee(
+    -> Emp_no int primary key,
+    -> Name varchar(20),
+    -> Balance_leave int);
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> insert into Employee values
+    -> (101,'Ananya',15),
+    -> (102,'Priya',10),
+    -> (103,'Rohan',5),
+    -> (104,'Sahil',20),
+    -> (105,'Kavya',8);
+Query OK, 5 rows affected (0.00 sec)
+
+mysql> set serveroutput on;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> create or replace procedure Deduction_Cal(
+    -> p_empno in number,
+    -> p_leave_date in date) 
+    -> is
+    -> v_days number;
+    -> v_balance number;
+    -> v_deduction number;
+    -> begin
+    ->   -- calculate number of leave days
+    ->   v_days := trunc(sysdate - p_leave_date);
+    ->   
+    ->   -- fetch current balance leave
+    ->   select Balance_leave into v_balance 
+    ->   from Employee where Emp_no = p_empno;
+    ->   
+    ->   if v_days <= v_balance then
+    ->      update Employee 
+    ->      set Balance_leave = Balance_leave - v_days
+    ->      where Emp_no = p_empno;
+    ->      dbms_output.put_line('Leave approved. Updated Balance = '||(v_balance-v_days));
+    ->   else
+    ->      v_deduction := (v_days - v_balance) * 500;
+    ->      update Employee set Balance_leave = 0 where Emp_no = p_empno;
+    ->      dbms_output.put_line('Leave exceeds balance. Deduction = Rs '||v_deduction);
+    ->   end if;
+    -> exception
+    ->   when no_data_found then
+    ->      dbms_output.put_line('Employee not found!');
+    ->   when others then
+    ->      dbms_output.put_line('Some error occurred: '||sqlerrm);
+    -> end;
+    -> /
+
+mysql> exec Deduction_Cal(101, to_date('01-JAN-2025','DD-MON-YYYY'));
+Leave approved. Updated Balance = 5
+
+mysql> exec Deduction_Cal(103, to_date('01-JAN-2025','DD-MON-YYYY'));
+Leave exceeds balance. Deduction = Rs 4500
+
+mysql> select * from Employee;
++--------+--------+---------------+
+| Emp_no | Name   | Balance_leave |
++--------+--------+---------------+
+|    101 | Ananya |             5 |
+|    102 | Priya  |            10 |
+|    103 | Rohan  |             0 |
+|    104 | Sahil  |            20 |
+|    105 | Kavya  |             8 |
++--------+--------+---------------+
+5 rows in set (0.00 sec)
+

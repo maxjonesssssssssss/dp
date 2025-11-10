@@ -1,0 +1,78 @@
+mysql> create database emp;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> use emp;
+Database changed
+
+mysql> create table EmpInfo(
+    -> Id int primary key,
+    -> Name varchar(20),
+    -> Salary int,
+    -> Marks int);
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> create table EmpGrade(
+    -> Id int,
+    -> Name varchar(20),
+    -> Grade varchar(5));
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> delimiter //
+mysql> create procedure proc_Grade()
+    -> begin
+    ->   declare done int default 0;
+    ->   declare eid int;
+    ->   declare ename varchar(20);
+    ->   declare esal int;
+    ->   declare emarks int;
+    ->   declare egrade varchar(5);
+    ->   declare cur cursor for select Id,Name,Salary,Marks from EmpInfo;
+    ->   declare continue handler for not found set done=1;
+    ->   
+    ->   open cur;
+    ->   repeat
+    ->     fetch cur into eid,ename,esal,emarks;
+    ->     if not done then
+    ->       if esal < 30000 and emarks >= 15000 then
+    ->         set egrade='P4';
+    ->       elseif esal between 30000 and 50000 then
+    ->         set egrade='P3';
+    ->       elseif esal < 80000 and emarks >= 50000 then
+    ->         set egrade='P2';
+    ->       elseif esal >= 80000 then
+    ->         set egrade='P1';
+    ->       else
+    ->         set egrade='NA';
+    ->       end if;
+    ->       
+    ->       insert into EmpGrade values(eid,ename,egrade);
+    ->     end if;
+    ->   until done end repeat;
+    ->   close cur;
+    -> end //
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> delimiter ;
+
+mysql> insert into EmpInfo values
+    -> (1,'Ananya',25000,16000),
+    -> (2,'Priya',40000,14000),
+    -> (3,'Rohan',60000,52000),
+    -> (4,'Sahil',90000,30000),
+    -> (5,'Kavya',28000,10000);
+Query OK, 5 rows affected (0.00 sec)
+
+mysql> call proc_Grade();
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> select * from EmpGrade;
++----+--------+-------+
+| Id | Name   | Grade |
++----+--------+-------+
+|  1 | Ananya | P4    |
+|  2 | Priya  | P3    |
+|  3 | Rohan  | P2    |
+|  4 | Sahil  | P1    |
+|  5 | Kavya  | NA    |
++----+--------+-------+
+5 rows in set (0.00 sec)

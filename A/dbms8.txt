@@ -1,0 +1,176 @@
+												Assignment-8
+												
+bvcoew@coew-des-0214:~$ sudo bash 
+root@coew-des-0214:/home/bvcoew# mysql
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.0.42-0ubuntu0.20.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+mysql> CREATE DATABASE LIBRARY;
+Query OK, 1 row affected (0.00 sec)
+
+mysql> use library;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> CREATE TABLE IF NOT EXISTS Library (
+    ->     library_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     book_title VARCHAR(200),
+    ->     author VARCHAR(100),
+    ->     published_on DATE,
+    ->     genre VARCHAR(100)
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> CREATE TABLE IF NOT EXISTS Library_Audit (
+    ->     audit_id INT PRIMARY KEY AUTO_INCREMENT,
+    ->     library_id INT,
+    ->     operation VARCHAR(20),
+    ->     prev_values TEXT,
+    ->     new_values TEXT,
+    ->     changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ->     changed_by VARCHAR(50)
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> INSERT INTO Library (book_title, author, published_on, genre) VALUES
+    -> ('Winds of Change', 'Ravi Deshmukh', '2001-03-15', 'Drama'),
+    -> ('Shadows of the Mind', 'Anita Mehta', '1998-11-22', 'Psychological Fiction'),
+    -> ('The Hidden Path', 'Rahul Menon', '2010-05-10', 'Adventure'),
+    -> ('Echoes of Eternity', 'Kiran Rao', '2005-09-09', 'Philosophy'),
+    -> ('Beneath the Banyan Tree', 'Leena Kapoor', '2015-01-18', 'Contemporary');
+Query OK, 5 rows affected (0.01 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> DELIMITER $$
+mysql> 
+mysql> CREATE TRIGGER trg_before_update_library
+    -> BEFORE UPDATE ON Library
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     INSERT INTO Library_Audit (
+    ->         library_id, operation, prev_values, new_values, changed_by
+    ->     ) VALUES (
+    ->         OLD.library_id,
+    ->         'BEFORE UPDATE',
+    ->         CONCAT('Title: ', OLD.book_title, ', Author: ', OLD.author, ', Published: ', DATE_FORMAT(OLD.published_on, '%Y-%m-%d'), ', Genre: ', OLD.genre),
+    ->         CONCAT('Title: ', NEW.book_title, ', Author: ', NEW.author, ', Published: ', DATE_FORMAT(NEW.published_on, '%Y-%m-%d'), ', Genre: ', NEW.genre),
+    ->         CURRENT_USER()
+    ->     );
+    -> END$$
+Query OK, 0 rows affected (0.01 sec)
+
+
+mysql> DELIMITER ;
+mysql> DELIMITER $$
+mysql> 
+mysql> CREATE TRIGGER trg_after_update_library
+    -> AFTER UPDATE ON Library
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     INSERT INTO Library_Audit (
+    ->         library_id, operation, prev_values, new_values, changed_by
+    ->     ) VALUES (
+    ->         OLD.library_id,
+    ->         'AFTER UPDATE',
+    ->         CONCAT('Title: ', OLD.book_title, ', Author: ', OLD.author, ', Published: ', DATE_FORMAT(OLD.published_on, '%Y-%m-%d'), ', Genre: ', OLD.genre),
+    ->         CONCAT('Title: ', NEW.book_title, ', Author: ', NEW.author, ', Published: ', DATE_FORMAT(NEW.published_on, '%Y-%m-%d'), ', Genre: ', NEW.genre),
+    ->         CURRENT_USER()
+    ->     );
+    -> END$$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> 
+mysql> DELIMITER ;
+mysql> DELIMITER $$
+mysql> 
+mysql> CREATE TRIGGER trg_before_delete_library
+    -> BEFORE DELETE ON Library
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     INSERT INTO Library_Audit (
+    ->         library_id, operation, prev_values, new_values, changed_by
+    ->     ) VALUES (
+    ->         OLD.library_id,
+    ->         'BEFORE DELETE',
+    ->         CONCAT('Title: ', OLD.book_title, ', Author: ', OLD.author, ', Published: ', DATE_FORMAT(OLD.published_on, '%Y-%m-%d'), ', Genre: ', OLD.genre),
+    ->         NULL,
+    ->         CURRENT_USER()
+    ->     );
+    -> END$$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> 
+mysql> DELIMITER ;
+mysql> DELIMITER $$
+mysql> 
+mysql> CREATE TRIGGER trg_after_delete_library
+    -> AFTER DELETE ON Library
+    -> FOR EACH ROW
+    -> BEGIN
+    ->     INSERT INTO Library_Audit (
+    ->         library_id, operation, prev_values, new_values, changed_by
+    ->     ) VALUES (
+    ->         OLD.library_id,
+    ->         'AFTER DELETE',
+    ->         CONCAT('Title: ', OLD.book_title, ', Author: ', OLD.author, ', Published: ', DATE_FORMAT(OLD.published_on, '%Y-%m-%d'), ', Genre: ', OLD.genre),
+    ->         NULL,
+    ->         CURRENT_USER()
+    ->     );
+    -> END$$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> 
+mysql> DELIMITER ;
+mysql> select * from Library;
++------------+--------------------------+----------------+--------------+------------------------+
+| library_id | book_title               | author         | published_on | genre                  |
++------------+--------------------------+----------------+--------------+------------------------+
+|          1 | Winds of Change          | Ravi Deshmukh  | 2001-03-15   | Drama                  |
+|          2 | Shadows of the Mind      | Anita Mehta    | 1998-11-22   | Psychological Fiction   |
+|          3 | The Hidden Path          | Rahul Menon    | 2010-05-10   | Adventure              |
+|          4 | Echoes of Eternity       | Kiran Rao      | 2005-09-09   | Philosophy             |
+|          5 | Beneath the Banyan Tree  | Leena Kapoor   | 2015-01-18   | Contemporary           |
++------------+--------------------------+----------------+--------------+------------------------+
+5 rows in set (0.00 sec)
+
+mysql> UPDATE Library
+    -> SET genre = 'Inspirational'
+    -> WHERE book_title = 'Echoes of Eternity';
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> 
+mysql> DELETE FROM Library
+    -> WHERE book_title = 'Shadows of the Mind';
+Query OK, 1 row affected (0.00 sec)
+
+mysql> SELECT * FROM Library_Audit ORDER BY changed_at DESC;
++----------+------------+---------------+---------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------+---------------------+----------------+
+| audit_id | library_id | operation     | prev_values                                                                                 | new_values                                                                                         | changed_at          | changed_by     |
++----------+------------+---------------+---------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------+---------------------+----------------+
+|        1 |          4 | BEFORE UPDATE | Title: Echoes of Eternity, Author: Kiran Rao, Published: 2005-09-09, Genre: Philosophy      | Title: Echoes of Eternity, Author: Kiran Rao, Published: 2005-09-09, Genre: Inspirational          | 2025-09-12 12:36:19 | root@localhost |
+|        2 |          4 | AFTER UPDATE  | Title: Echoes of Eternity, Author: Kiran Rao, Published: 2005-09-09, Genre: Philosophy      | Title: Echoes of Eternity, Author: Kiran Rao, Published: 2005-09-09, Genre: Inspirational          | 2025-09-12 12:36:19 | root@localhost |
+|        3 |          2 | BEFORE DELETE | Title: Shadows of the Mind, Author: Anita Mehta, Published: 1998-11-22, Genre: Psychological Fiction | NULL                                                                                        | 2025-09-12 12:36:19 | root@localhost |
+|        4 |          2 | AFTER DELETE  | Title: Shadows of the Mind, Author: Anita Mehta, Published: 1998-11-22, Genre: Psychological Fiction | NULL                                                                                        | 2025-09-12 12:36:19 | root@localhost |
++----------+------------+---------------+---------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------+---------------------+----------------+
+4 rows in set (0.00 sec)
+
+mysql> select * from Library;
++------------+--------------------------+----------------+--------------+----------------+
+| library_id | book_title               | author         | published_on | genre          |
++------------+--------------------------+----------------+--------------+----------------+
+|          1 | Winds of Change          | Ravi Deshmukh  | 2001-03-15   | Drama          |
+|          3 | The Hidden Path          | Rahul Menon    | 2010-05-10   | Adventure      |
+|          4 | Echoes of Eternity       | Kiran Rao      | 2005-09-09   | Inspirational  |
+|          5 | Beneath the Banyan Tree  | Leena Kapoor   | 2015-01-18   | Contemporary   |
++------------+--------------------------+----------------+--------------+----------------+
+4 rows in set (0.00 sec)

@@ -1,0 +1,59 @@
+mysql> use mydb;
+Database changed
+
+mysql> create view v1 as (select * from instructor where dept_name='CSE');
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from v1;
++----+--------+-----------+---------+
+| id | name   | dept_name | salary  |
++----+--------+-----------+---------+
+|  1 | Ananya | CSE       | 1029000 |
++----+--------+-----------+---------+
+1 row in set (0.00 sec)
+
+mysql> drop view v1;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> show index from department;
++------------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table      | Non_unique | Key_name | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++------------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| department |          0 | PRIMARY  |            1 | dept_name   | A         |           5 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
++------------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+1 row in set (0.01 sec)
+
+mysql> create index idx on department(dept_name);
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> show index from department;
++------------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table      | Non_unique | Key_name | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++------------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| department |          0 | PRIMARY  |            1 | dept_name   | A         |           5 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| department |          1 | idx      |            1 | dept_name   | A         |           5 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
++------------+------------+----------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+2 rows in set (0.01 sec)
+
+mysql> drop index idx on department;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> create view course_dept as 
+select c.course_id, c.dept_name,
+       (select d.building from department d where d.dept_name = c.dept_name) as building 
+from course c;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> select * from course_dept;
++-----------+------------+------------+
+| course_id | dept_name  | building   |
++-----------+------------+------------+
+|         5 | AI         | Central    |
+|         1 | CSE        | North Wing |
+|         3 | ECE        | West Wing  |
+|         2 | IT         | East Wing  |
+|         4 | Mechanical | South Wing |
++-----------+------------+------------+
+5 rows in set (0.00 sec)

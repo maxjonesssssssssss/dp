@@ -1,0 +1,270 @@
+bvcoew@bvcoew-OptiPlex-3000:~$ sudo bash
+[sudo] password for bvcoew: 
+root@bvcoew-OptiPlex-3000:/home/bvcoew# mysql
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 8.0.42-0ubuntu0.20.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2025, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use database student_db;
+ERROR 1049 (42000): Unknown database 'database'
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| RTO                |
+| ass5               |
+| bvcoew             |
+| classroom          |
+| employee           |
+| information_schema |
+| institute          |
+| license            |
+| mysql              |
+| performance_schema |
+| student_db         |
+| sys                |
++--------------------+
+12 rows in set (0.01 sec)
+
+mysql> use database student_db
+ERROR 1049 (42000): Unknown database 'database'
+mysql> USE DATABASE student_db
+ERROR 1049 (42000): Unknown database 'DATABASE'
+mysql> USE student_db;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> CREATE TABLE Borrower (
+    ->     Roll_no       VARCHAR2(10),
+    ->     Name          VARCHAR2(50),
+    ->     Date_of_Issue DATE,
+    ->     Name_of_Book  VARCHAR2(100),
+    ->     Status        VARCHAR2(20)
+    -> );
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'VARCHAR2(10),
+    Name          VARCHAR2(50),
+    Date_of_Issue DATE,
+    Name_o' at line 2
+mysql> CREATE TABLE Borrower (
+    ->     Roll_no        VARCHAR(10),
+    ->     Name           VARCHAR(50),
+    ->     Date_of_Issue  DATE,
+    ->     Name_of_Book   VARCHAR(100),
+    ->     Status         VARCHAR(20)
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> CREATE TABLE Fine (
+    ->     Roll_no  VARCHAR(10),
+    ->     Date     DATE,
+    ->     Amt      INT
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> -- Set fixed dates (e.g., '2025-07-01', '2025-06-20', '2025-06-01')
+mysql> INSERT INTO Borrower VALUES 
+    -> ('R001', 'Alice', '2025-07-01', 'DBMS', 'Issued'),
+    -> ('R002', 'Bob', '2025-06-20', 'OS', 'Issued'),
+    -> ('R003', 'Charlie', '2025-06-01', 'CN', 'Issued');
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Borrower VALUES
+    -> ('R004', 'David', '2025-07-15', 'Math', 'Issued'),
+    -> ('R005', 'Eva', '2025-06-10', 'Physics', 'Issued'),
+    -> ('R006', 'Frank', '2025-05-25', 'Chemistry', 'Issued');
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> 
+mysql> select  * from Borrower;
++---------+---------+---------------+--------------+--------+
+| Roll_no | Name    | Date_of_Issue | Name_of_Book | Status |
++---------+---------+---------------+--------------+--------+
+| R001    | Alice   | 2025-07-01    | DBMS         | Issued |
+| R002    | Bob     | 2025-06-20    | OS           | Issued |
+| R003    | Charlie | 2025-06-01    | CN           | Issued |
+| R004    | David   | 2025-07-15    | Math         | Issued |
+| R005    | Eva     | 2025-06-10    | Physics      | Issued |
+| R006    | Frank   | 2025-05-25    | Chemistry    | Issued |
++---------+---------+---------------+--------------+--------+
+6 rows in set (0.00 sec)
+
+mysql> select * from fine;
+ERROR 1146 (42S02): Table 'student_db.fine' doesn't exist
+mysql> select * from Fine;
+Empty set (0.00 sec)
+
+mysql> DELIMITER $$
+mysql> CREATE PROCEDURE PROC_LIB(IN Roll_no INT,IN Book_name varchar(20))
+    -> BEGIN
+    -> DECLARE no_of_days INT;
+    -> DECLARE fine_amount INT;
+    -> DECLARE issue_date date;
+    -> set fine_amount :=0;
+    -> select Date_of_Issue into issue_date from borrower where borrower.Roll_no=Roll_no and Name_of_Book=Book_name;
+    -> select issue_date;
+    -> select datediff(current_date,issue_date)
++-    -
+
+^C
+mysql> DELIMITER //
+mysql> 
+mysql> CREATE PROCEDURE Calculate_Fine (
+    ->     IN in_roll_no VARCHAR(10),
+    ->     IN in_book_name VARCHAR(100)
+    -> )
+    -> BEGIN
+    ->     DECLARE v_date_issue DATE;
+    ->     DECLARE v_days_diff INT;
+    ->     DECLARE v_fine_amt INT DEFAULT 0;
+    -> 
+    ->     -- Handle errors gracefully
+    ->     DECLARE exit handler FOR SQLEXCEPTION
+    ->     BEGIN
+    ->         SELECT 'An error occurred. Please check your input or the data.' AS Error;
+    ->     END;
+    -> 
+    ->     -- Get the borrow date
+    ->     SELECT Date_of_Issue INTO v_date_issue
+    ->     FROM Borrower
+    ->     WHERE Roll_no = in_roll_no AND Name_of_Book = in_book_name;
+    -> 
+    ->     -- Calculate days overdue
+    ->     SET v_days_diff = DATEDIFF(CURDATE(), v_date_issue);
+    -> 
+    ->     -- Fine logic
+    ->     IF v_days_diff > 15 AND v_days_diff <= 30 THEN
+    ->         SET v_fine_amt = (v_days_diff - 15) * 5;
+    ->     ELSEIF v_days_diff > 30 THEN
+    ->         SET v_fine_amt = (30 - 15) * 5 + (v_days_diff - 30) * 50;
+    ->     END IF;
+    -> 
+    ->     -- Insert fine if applicable
+    ->     IF v_fine_amt > 0 THEN
+    ->         INSERT INTO Fine (Roll_no, Date, Amt)
+    ->         VALUES (in_roll_no, CURDATE(), v_fine_amt);
+    ->         
+    ->         SELECT CONCAT('Fine of Rs. ', v_fine_amt, ' has been added for Roll No: ', in_roll_no) AS Message;
+    ->     ELSE
+    ->         SELECT 'No fine applicable.' AS Message;
+    ->     END IF;
+    -> END;
+    -> //
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> 
+mysql> DELIMITER ;
+mysql> CALL Calculate_Fine('R003', 'CN');
++---------------------------------------------------+
+| Message                                           |
++---------------------------------------------------+
+| Fine of Rs. 1825 has been added for Roll No: R003 |
++---------------------------------------------------+
+1 row in set (0.02 sec)
+
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> SELECT * FROM Fine;
++---------+------------+------+
+| Roll_no | Date       | Amt  |
++---------+------------+------+
+| R003    | 2025-08-05 | 1825 |
++---------+------------+------+
+1 row in set (0.00 sec)
+
+mysql> drop procedure Calculate_Fine;
+drop procedure Calculate_Fine;
+^C
+mysql> drop procedure Calculate_Fine;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER //
+mysql> 
+mysql> CREATE PROCEDURE Calculate_Fine (
+    ->     IN in_roll_no VARCHAR(10),
+    ->     IN in_book_name VARCHAR(100)
+    -> )
+    -> BEGIN
+    ->     DECLARE v_date_issue DATE;
+    ->     DECLARE v_days_diff INT DEFAULT 0;
+    ->     DECLARE v_fine_amt INT DEFAULT 0;
+    -> 
+    ->     -- Exception flags
+    ->     DECLARE done INT DEFAULT FALSE;
+    ->     DECLARE CONTINUE HANDLER FOR NOT FOUND
+    ->         BEGIN
+    ->             SET done = TRUE;
+    ->         END;
+    -> 
+    ->     DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    ->         BEGIN
+    ->             SELECT 'An unexpected SQL error occurred.' AS Error;
+    ->         END;
+    -> 
+    ->     -- Step 1: Try to get the issue date
+    ->     SELECT Date_of_Issue INTO v_date_issue
+    ->     FROM Borrower
+    ->     WHERE Roll_no = in_roll_no AND Name_of_Book = in_book_name;
+    -> 
+    ->     -- Step 2: If no record found
+    ->     IF done THEN
+    ->         SELECT 'Error: No matching borrower record found for given Roll No and Book Name.' AS Error;
+    ->     ELSE
+    ->         -- Step 3: Calculate date difference
+    ->         SET v_days_diff = DATEDIFF(CURDATE(), v_date_issue);
+    -> 
+    ->         -- Step 4: Fine calculation
+    ->         IF v_days_diff > 15 AND v_days_diff <= 30 THEN
+    ->             SET v_fine_amt = (v_days_diff - 15) * 5;
+    ->         ELSEIF v_days_diff > 30 THEN
+    ->             SET v_fine_amt = (15 * 5) + ((v_days_diff - 30) * 50);
+    ->         END IF;
+    -> 
+    ->         -- Step 5: Insert fine if applicable
+    ->         IF v_fine_amt > 0 THEN
+    ->             INSERT INTO Fine (Roll_no, Date, Amt)
+    ->             VALUES (in_roll_no, CURDATE(), v_fine_amt);
+    -> 
+    ->             SELECT CONCAT('Fine of Rs. ', v_fine_amt, ' has been added for Roll No: ', in_roll_no) AS Message;
+    ->         ELSE
+    ->             SELECT 'No fine applicable.' AS Message;
+    ->         END IF;
+    ->     END IF;
+    -> 
+    -> END;
+    -> //
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+mysql> CALL Calculate_Fine('R005', 'Physics');
++---------------------------------------------------+
+| Message                                           |
++---------------------------------------------------+
+| Fine of Rs. 1375 has been added for Roll No: R005 |
++---------------------------------------------------+
+1 row in set (0.01 sec)
+
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT * FROM Fine;
++---------+------------+------+
+| Roll_no | Date       | Amt  |
++---------+------------+------+
+| R003    | 2025-08-05 | 1825 |
+| R005    | 2025-08-05 | 1375 |
++---------+------------+------+
+2 rows in set (0.00 sec)
+
+mysql> 
+
+

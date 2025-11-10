@@ -1,0 +1,114 @@
+mysql> CREATE DATABASE rollcall_db;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> USE rollcall_db;
+Database changed
+mysql> -- Old Roll Call table
+mysql> CREATE TABLE O_RollCall (
+    ->     roll_no INT PRIMARY KEY,
+    ->     name VARCHAR(50)
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> 
+mysql> -- New Roll Call table
+mysql> CREATE TABLE N_RollCall (
+    ->     roll_no INT PRIMARY KEY,
+    ->     name VARCHAR(50)
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> INSERT INTO O_RollCall VALUES
+    -> (1, 'Aditi'),
+    -> (2, 'Ansika'),
+    -> (3, 'Mihika'),
+    -> (4, 'Sanjana');
+Query OK, 4 rows affected (0.01 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM O_RollCall;
++---------+---------+
+| roll_no | name    |
++---------+---------+
+|       1 | Aditi   |
+|       2 | Ansika  |
+|       3 | Mihika  |
+|       4 | Sanjana |
++---------+---------+
+4 rows in set (0.00 sec)
+
+mysql> INSERT INTO N_RollCall VALUES
+    -> (3, 'Mihika'),
+    -> (4, 'Sanjana'),
+    -> (5, 'Neha'),
+    -> (6, 'Kesar'),
+    -> (7, 'Aanchal'),
+    -> (8, 'Shravni');
+Query OK, 6 rows affected (0.01 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM N_RollCall;
++---------+---------+
+| roll_no | name    |
++---------+---------+
+|       3 | Mihika  |
+|       4 | Sanjana |
+|       5 | Neha    |
+|       6 | Kesar   |
+|       7 | Aanchal |
+|       8 | Shravni |
++---------+---------+
+6 rows in set (0.00 sec)
+
+mysql> DELIMITER $$
+mysql> 
+mysql> CREATE PROCEDURE merge_rollcalls(IN rollParam INT)
+    -> BEGIN
+    ->     DECLARE done INT DEFAULT 0;
+    ->     DECLARE rno INT;
+    ->     DECLARE rname VARCHAR(50);
+    -> 
+    ->     -- Parameterized cursor: fetch only rows >= rollParam
+    ->     DECLARE cur CURSOR FOR
+    ->         SELECT roll_no, name FROM N_RollCall WHERE roll_no >= rollParam;
+    -> 
+    ->     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    -> 
+    ->     OPEN cur;
+    ->     read_loop: LOOP
+    ->         FETCH cur INTO rno, rname;
+    ->         IF done THEN
+    ->             LEAVE read_loop;
+    ->         END IF;
+    -> 
+    ->         -- Insert if not already in old table
+    ->         IF NOT EXISTS (SELECT 1 FROM O_RollCall WHERE roll_no = rno) THEN
+    ->             INSERT INTO O_RollCall (roll_no, name)
+    ->             VALUES (rno, rname);
+    ->         END IF;
+    ->     END LOOP;
+    -> 
+    ->     CLOSE cur;
+    -> END$$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> 
+mysql> DELIMITER ;
+mysql> CALL merge_rollcalls(1);
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> SELECT * FROM O_RollCall;
++---------+---------+
+| roll_no | name    |
++---------+---------+
+|       1 | Aditi   |
+|       2 | Ansika  |
+|       3 | Mihika  |
+|       4 | Sanjana |
+|       5 | Neha    |
+|       6 | Kesar   |
+|       7 | Aanchal |
+|       8 | Shravni |
++---------+---------+
+8 rows in set (0.00 sec)
+

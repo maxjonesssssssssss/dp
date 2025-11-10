@@ -1,0 +1,103 @@
+mysql> create table libdata(
+    -> book_id int,
+    -> book_title varchar(40),
+    -> writer varchar(25),
+    -> allow_days int
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> create table libdata_audit(
+    -> book_id int,
+    -> old_days int,
+    -> new_days int
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> desc libdata;
++------------+--------------+------+-----+---------+-------+
+| Field      | Type         | Null | Key | Default | Extra |
++------------+--------------+------+-----+---------+-------+
+| book_id    | int          | YES  |     | NULL    |       |
+| book_title | varchar(40)  | YES  |     | NULL    |       |
+| writer     | varchar(25)  | YES  |     | NULL    |       |
+| allow_days | int          | YES  |     | NULL    |       |
++------------+--------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> desc libdata_audit;
++----------+---------+---------+
+| Field    | Type    | Null | Key | Default | Extra |
++----------+---------+---------+
+| book_id  | int     | YES  |     | NULL    |       |
+| old_days | int     | YES  |     | NULL    |       |
+| new_days | int     | YES  |     | NULL    |       |
++----------+---------+---------+
+3 rows in set (0.00 sec)
+
+mysql> insert into libdata values
+    -> (301,'Alchemist','Paulo Coelho',12),
+    -> (302,'The Fault in Our Stars','John Green',14),
+    -> (303,'Me Before You','Jojo Moyes',10),
+    -> (304,'Pride and Prejudice','Jane Austen',9);
+Query OK, 4 rows affected (0.01 sec)
+
+mysql> delimiter $$
+mysql> create trigger trig_update before update on libdata
+    -> for each row
+    -> begin
+    -> insert into libdata_audit values(old.book_id, old.allow_days, new.allow_days);
+    -> end$$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> update libdata set allow_days=15 where book_id=301;$$
+Query OK, 1 row affected (0.00 sec)
+
+mysql> select * from libdata_audit;$$
++---------+----------+----------+
+| book_id | old_days | new_days |
++---------+----------+----------+
+|     301 |       12 |       15 |
++---------+----------+----------+
+1 row in set (0.00 sec)
+
+mysql> update libdata set allow_days=20 where book_id=304;$$
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from libdata_audit;$$
++---------+----------+----------+
+| book_id | old_days | new_days |
++---------+----------+----------+
+|     301 |       12 |       15 |
+|     304 |        9 |       20 |
++---------+----------+----------+
+2 rows in set (0.00 sec)
+
+mysql> create trigger trig_delete before delete on libdata
+    -> for each row
+    -> begin
+    -> insert into libdata_audit values(old.book_id, old.allow_days, old.allow_days);
+    -> end$$
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> delete from libdata where book_id=304;$$
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from libdata_audit;$$
++---------+----------+----------+
+| book_id | old_days | new_days |
++---------+----------+----------+
+|     301 |       12 |       15 |
+|     304 |        9 |       20 |
+|     304 |       20 |       20 |
++---------+----------+----------+
+3 rows in set (0.00 sec)
+
+mysql> select * from libdata;$$
++---------+-------------------------+-------------+------------+
+| book_id | book_title              | writer      | allow_days |
++---------+-------------------------+-------------+------------+
+|     301 | Alchemist               | Paulo Coelho|         15 |
+|     302 | The Fault in Our Stars  | John Green  |         14 |
+|     303 | Me Before You           | Jojo Moyes  |         10 |
++---------+-------------------------+-------------+------------+
+3 rows in set (0.00 sec)

@@ -1,0 +1,428 @@
+mysql> CREATE DATABASE supplychain;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> USE supplychain;
+Database changed
+mysql> CREATE TABLE supplier (
+    -> supp_no VARCHAR(10),
+    -> supp_name VARCHAR(20),
+    -> status INT,
+    -> city VARCHAR(15),
+    -> PRIMARY KEY(supp_no) );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DESCRIBE supplier;
++-----------+-------------+------+-----+---------+-------+
+| Field     | Type        | Null | Key | Default | Extra |
++-----------+-------------+------+-----+---------+-------+
+| supp_no   | varchar(10) | NO   | PRI | NULL    |       |
+| supp_name | varchar(20) | YES  |     | NULL    |       |
+| status    | int         | YES  |     | NULL    |       |
+| city      | varchar(15) | YES  |     | NULL    |       |
++-----------+-------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> CREATE TABLE part (
+    -> part_no VARCHAR(10),
+    -> part_name VARCHAR(20),
+    -> color VARCHAR(15),
+    -> weight INT,
+    -> city VARCHAR(15),
+    -> PRIMARY KEY(part_no) );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DESCRIBE part;
++-----------+-------------+------+-----+---------+-------+
+| Field     | Type        | Null | Key | Default | Extra |
++-----------+-------------+------+-----+---------+-------+
+| part_no   | varchar(10) | NO   | PRI | NULL    |       |
+| part_name | varchar(20) | YES  |     | NULL    |       |
+| color     | varchar(15) | YES  |     | NULL    |       |
+| weight    | int         | YES  |     | NULL    |       |
+| city      | varchar(15) | YES  |     | NULL    |       |
++-----------+-------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> CREATE TABLE project (
+    -> pro_no VARCHAR(10),
+    -> pro_name VARCHAR(20),
+    -> city VARCHAR(15),
+    -> PRIMARY KEY(pro_no) );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DESC project;
++----------+-------------+------+-----+---------+-------+
+| Field    | Type        | Null | Key | Default | Extra |
++----------+-------------+------+-----+---------+-------+
+| pro_no   | varchar(10) | NO   | PRI | NULL    |       |
+| pro_name | varchar(20) | YES  |     | NULL    |       |
+| city     | varchar(15) | YES  |     | NULL    |       |
++----------+-------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+mysql> CREATE TABLE shipment (
+    -> supp_no VARCHAR(10),
+    -> part_no VARCHAR(10),
+    -> pro_no VARCHAR(10),
+    -> quantity INT,
+    -> PRIMARY KEY(supp_no, part_no, pro_no),
+    -> FOREIGN KEY (supp_no) REFERENCES supplier(supp_no),
+    -> FOREIGN KEY (part_no) REFERENCES part(part_no),
+    -> FOREIGN KEY (pro_no) REFERENCES project(pro_no) );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DESC shipment;
++----------+-------------+------+-----+---------+-------+
+| Field    | Type        | Null | Key | Default | Extra |
++----------+-------------+------+-----+---------+-------+
+| supp_no  | varchar(10) | NO   | PRI | NULL    |       |
+| part_no  | varchar(10) | NO   | PRI | NULL    |       |
+| pro_no   | varchar(10) | NO   | PRI | NULL    |       |
+| quantity | int         | YES  |     | NULL    |       |
++----------+-------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> INSERT INTO supplier (supp_no, supp_name, status, city)
+    -> VALUES ('S1', 'Aditi Traders', 20, 'Pune'),
+    -> ('S2', 'Mihika Supplies', 30, 'Bhopal'),
+    -> ('S3', 'Riya Co.', 10, 'Delhi'),
+    -> ('S4', 'Ansika Pvt Ltd', 40, 'Mumbai');
+Query OK, 4 rows affected (0.00 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM supplier;
++---------+-----------------+--------+--------+
+| supp_no | supp_name       | status | city   |
++---------+-----------------+--------+--------+
+| S1      | Aditi Traders   |     20 | Pune   |
+| S2      | Mihika Supplies |     30 | Bhopal |
+| S3      | Riya Co.        |     10 | Delhi  |
+| S4      | Ansika Pvt Ltd  |     40 | Mumbai |
++---------+-----------------+--------+--------+
+4 rows in set (0.00 sec)
+
+mysql> INSERT INTO part (part_no, part_name, color, weight, city) VALUES
+    -> ('P1', 'Bolt', 'Red', 12, 'Pune'),
+    -> ('P2', 'Nut', 'Black', 8, 'Bhopal'),
+    -> ('P3', 'Screw', 'Blue', 15, 'Delhi'),
+    -> ('P4', 'Washer', 'Green', 9, 'Mumbai');
+Query OK, 4 rows affected (0.00 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM part;
++---------+-----------+-------+--------+--------+
+| part_no | part_name | color | weight | city   |
++---------+-----------+-------+--------+--------+
+| P1      | Bolt      | Red   |     12 | Pune   |
+| P2      | Nut       | Black |      8 | Bhopal |
+| P3      | Screw     | Blue  |     15 | Delhi  |
+| P4      | Washer    | Green |      9 | Mumbai |
++---------+-----------+-------+--------+--------+
+4 rows in set (0.00 sec)
+
+mysql> INSERT INTO project (pro_no, pro_name, city) VALUES 
+    -> ('J1', 'Metro Project', 'Mumbai'),
+    -> ('J2', 'Bridge Build', 'Pune'),
+    -> ('J3', 'Smart City', 'Bhopal'),
+    -> ('J4', 'Highway Extension', 'Delhi');
+Query OK, 4 rows affected (0.01 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM project;
++--------+-------------------+--------+
+| pro_no | pro_name          | city   |
++--------+-------------------+--------+
+| J1     | Metro Project     | Mumbai |
+| J2     | Bridge Build      | Pune   |
+| J3     | Smart City        | Bhopal |
+| J4     | Highway Extension | Delhi  |
++--------+-------------------+--------+
+4 rows in set (0.00 sec)
+
+mysql> INSERT INTO shipment (supp_no, part_no, pro_no, quantity) VALUES
+    -> ('S1', 'P1', 'J1', 100),
+    -> ('S2', 'P2', 'J2', 150),
+    -> ('S3', 'P3', 'J3', 200),
+    -> ('S4', 'P4', 'J4', 250),
+    -> ('S1', 'P2', 'J2', 180),
+    -> ('S2', 'P3', 'J1', 220);
+Query OK, 6 rows affected (0.00 sec)
+Records: 6  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM shipment;
++---------+---------+--------+----------+
+| supp_no | part_no | pro_no | quantity |
++---------+---------+--------+----------+
+| S1      | P1      | J1     |      100 |
+| S1      | P2      | J2     |      180 |
+| S2      | P2      | J2     |      150 |
+| S2      | P3      | J1     |      220 |
+| S3      | P3      | J3     |      200 |
+| S4      | P4      | J4     |      250 |
++---------+---------+--------+----------+
+6 rows in set (0.00 sec)
+
+mysql> INSERT INTO supplier (supp_no, supp_name, status, city) VALUES ('S5', 'PNG and Sons', 50, 'Pune');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT * FROM supplier;
++---------+-----------------+--------+--------+
+| supp_no | supp_name       | status | city   |
++---------+-----------------+--------+--------+
+| S1      | Aditi Traders   |     20 | Pune   |
+| S2      | Mihika Supplies |     30 | Bhopal |
+| S3      | Riya Co.        |     10 | Delhi  |
+| S4      | Ansika Pvt Ltd  |     40 | Mumbai |
+| S5      | PNG and Sons    |     50 | Pune   |
++---------+-----------------+--------+--------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT * FROM supplier 
+    -> WHERE city = 'Pune';
++---------+---------------+--------+------+
+| supp_no | supp_name     | status | city |
++---------+---------------+--------+------+
+| S1      | Aditi Traders |     20 | Pune |
+| S5      | PNG and Sons  |     50 | Pune |
++---------+---------------+--------+------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT supp_no
+    -> FROM supplier
+    -> WHERE status > (SELECT AVG(status) FROM supplier);
++---------+
+| supp_no |
++---------+
+| S4      |
+| S5      |
++---------+
+2 rows in set (0.01 sec)
+
+mysql> SELECT COUNT(*) AS total FROM supplier;
++-------+
+| total |
++-------+
+|     5 |
++-------+
+1 row in set (0.00 sec)
+
+mysql> SELECT supp_no, AVG(quantity) AS average_Quantity
+    -> FROm shipment GROUP BY supp_no;
++---------+------------------+
+| supp_no | average_Quantity |
++---------+------------------+
+| S1      |         140.0000 |
+| S2      |         185.0000 |
+| S3      |         200.0000 |
+| S4      |         250.0000 |
++---------+------------------+
+4 rows in set (0.00 sec)
+
+ysql> DROP TABLE project;
+ERROR 3730 (HY000): Cannot drop table 'project' referenced by a foreign key constraint 'shipment_ibfk_3' on table 'shipment'.
+mysql> ALTER TABLE shipment DROP FOREIGN KEY pro_no;
+ERROR 1091 (42000): Can't DROP 'pro_no'; check that column/key exists
+mysql> ALTER TABLE shipment DROP FOREIGN KEY shipment_ibfk_3;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> DROP TABLE project;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DROP TABLE project;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> UPDATE supplier
+    -> SET city = 'Mumbai'
+    -> WHERE supp_no = 'S1';
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT * FROM supplier;
++---------+-----------------+--------+--------+
+| supp_no | supp_name       | status | city   |
++---------+-----------------+--------+--------+
+| S1      | Aditi Traders   |     20 | Mumbai |
+| S2      | Mihika Supplies |     30 | Bhopal |
+| S3      | Riya Co.        |     10 | Delhi  |
+| S4      | Ansika Pvt Ltd  |     40 | Mumbai |
+| S5      | PNG and Sons    |     50 | Pune   |
++---------+-----------------+--------+--------+
+5 rows in set (0.00 sec)
+
+mysql> UPDATE supplier SET city = 'Pune' WHERE supp_no = 'S1';
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT * FROM supplier;
++---------+-----------------+--------+--------+
+| supp_no | supp_name       | status | city   |
++---------+-----------------+--------+--------+
+| S1      | Aditi Traders   |     20 | Pune   |
+| S2      | Mihika Supplies |     30 | Bhopal |
+| S3      | Riya Co.        |     10 | Delhi  |
+| S4      | Ansika Pvt Ltd  |     40 | Mumbai |
+| S5      | PNG and Sons    |     50 | Pune   |
++---------+-----------------+--------+--------+
+5 rows in set (0.00 sec)
+
+mysql> UPDATE shipment
+    -> SET quantity = 160
+    -> WHERE part_no = 'P1';
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT * FROM shipment;
++---------+---------+--------+----------+
+| supp_no | part_no | pro_no | quantity |
++---------+---------+--------+----------+
+| S1      | P1      | J1     |      160 |
+| S1      | P2      | J2     |      180 |
+| S2      | P3      | J1     |      220 |
+| S3      | P3      | J3     |      200 |
+| S4      | P4      | J4     |      250 |
++---------+---------+--------+----------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT color, city
+    -> FROM part
+    -> WHERE city <> 'Pune'
+    -> AND weight > 10;
++-------+-------+
+| color | city  |
++-------+-------+
+| Blue  | Delhi |
++-------+-------+
+1 row in set (0.00 sec)
+
+mysql> SELECT color, city FROM part WHERE city <> 'Pune' AND weight < 10;
++-------+--------+
+| color | city   |
++-------+--------+
+| Black | Bhopal |
+| Green | Mumbai |
++-------+--------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT part_no, weight * 435.592 AS weight_in_grams FROM part;
++---------+-----------------+
+| part_no | weight_in_grams |
++---------+-----------------+
+| P1      |        5227.104 |
+| P2      |        3484.736 |
+| P3      |        6533.880 |
+| P4      |        3920.328 |
++---------+-----------------+
+4 rows in set (0.00 sec)
+
+mysql> UPDATE part
+    -> SET color = 'PINK'
+    -> WHERE part_no = 'P1';
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT * FROM part;
++---------+-----------+-------+--------+--------+
+| part_no | part_name | color | weight | city   |
++---------+-----------+-------+--------+--------+
+| P1      | Bolt      | PINK  |     12 | Pune   |
+| P2      | Nut       | Black |      8 | Bhopal |
+| P3      | Screw     | Blue  |     15 | Delhi  |
+| P4      | Washer    | Green |      9 | Mumbai |
++---------+-----------+-------+--------+--------+
+4 rows in set (0.00 sec)
+
+mysql> UPDATE supplier
+    -> SET supp_name = 'PAWAR TRADERS'
+    -> WHERE supp_no = 'S3';
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT * FROM supplier;
++---------+-----------------+--------+--------+
+| supp_no | supp_name       | status | city   |
++---------+-----------------+--------+--------+
+| S1      | Aditi Traders   |     20 | Pune   |
+| S2      | Mihika Supplies |     30 | Bhopal |
+| S3      | PAWAR TRADERS   |     10 | Delhi  |
+| S4      | Ansika Pvt Ltd  |     40 | Mumbai |
+| S5      | PNG and Sons    |     50 | Pune   |
++---------+-----------------+--------+--------+
+5 rows in set (0.00 sec)
+
+mysql> DELETE FROM project
+    -> WHERE city = 'Delhi';
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT * FROM project;
++--------+---------------+--------+
+| pro_no | pro_name      | city   |
++--------+---------------+--------+
+| J1     | Metro Project | Mumbai |
+| J2     | Bridge Build  | Pune   |
+| J3     | Smart City    | Bhopal |
++--------+---------------+--------+
+3 rows in set (0.00 sec)
+
+mysql> ALTER TABLE shipment
+    -> ADD date DATE;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> DESC shipment;
++----------+-------------+------+-----+---------+-------+
+| Field    | Type        | Null | Key | Default | Extra |
++----------+-------------+------+-----+---------+-------+
+| supp_no  | varchar(10) | NO   | PRI | NULL    |       |
+| part_no  | varchar(10) | NO   | PRI | NULL    |       |
+| pro_no   | varchar(10) | NO   | PRI | NULL    |       |
+| quantity | int         | YES  |     | NULL    |       |
+| date     | date        | YES  |     | NULL    |       |
++----------+-------------+------+-----+---------+-------+
+5 rows in set (0.01 sec)
+
+mysql> UPDATE shipment
+    -> SET date = '2024-07-25';
+Query OK, 5 rows affected (0.01 sec)
+Rows matched: 5  Changed: 5  Warnings: 0
+
+mysql> DESC shipment;
++----------+-------------+------+-----+---------+-------+
+| Field    | Type        | Null | Key | Default | Extra |
++----------+-------------+------+-----+---------+-------+
+| supp_no  | varchar(10) | NO   | PRI | NULL    |       |
+| part_no  | varchar(10) | NO   | PRI | NULL    |       |
+| pro_no   | varchar(10) | NO   | PRI | NULL    |       |
+| quantity | int         | YES  |     | NULL    |       |
+| date     | date        | YES  |     | NULL    |       |
++----------+-------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> SELECt * FROM shipment;
++---------+---------+--------+----------+------------+
+| supp_no | part_no | pro_no | quantity | date       |
++---------+---------+--------+----------+------------+
+| S1      | P1      | J1     |      160 | 2024-07-25 |
+| S1      | P2      | J2     |      180 | 2024-07-25 |
+| S2      | P3      | J1     |      220 | 2024-07-25 |
+| S3      | P3      | J3     |      200 | 2024-07-25 |
+| S4      | P4      | J4     |      250 | 2024-07-25 |
++---------+---------+--------+----------+------------+
+5 rows in set (0.00 sec)
+
+mysql> ALTER TABLE shipment
+    -> DROP COLUMN date;
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SELECt * FROM shipment;
++---------+---------+--------+----------+
+| supp_no | part_no | pro_no | quantity |
++---------+---------+--------+----------+
+| S1      | P1      | J1     |      160 |
+| S1      | P2      | J2     |      180 |
+| S2      | P3      | J1     |      220 |
+| S3      | P3      | J3     |      200 |
+| S4      | P4      | J4     |      250 |
++---------+---------+--------+----------+
+5 rows in set (0.00 sec)

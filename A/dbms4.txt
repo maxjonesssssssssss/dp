@@ -1,0 +1,83 @@
+mysql> create index idx_supplier_id on supplier(sup_no);
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> create index idx_city_name on supplier(city);
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> show index from supplier;
++----------+------------+----------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table    | Non_unique | Key_name       | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++----------+------------+----------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| supplier |          0 | PRIMARY        |            1 | sup_no      | A         |          10 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| supplier |          1 | idx_supplier_id|            1 | sup_no      | A         |          10 |     NULL |   NULL |      | BTREE      |         |               | YES     | NULL       |
+| supplier |          1 | idx_city_name  |            1 | city        | A         |           8 |     NULL |   NULL | YES  | BTREE      |         |               | YES     | NULL       |
++----------+------------+----------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+3 rows in set (0.00 sec)
+
+mysql> drop index idx_city_name on supplier;
+Query OK, 0 rows affected (0.01 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> select * from supplier inner join part on supplier.city=part.city;
++--------+-----------+--------+-----------+---------+-----------+--------+--------+-----------+
+| sup_no | sup_name  | status | city      | part_no | part_name | color  | weight | city      |
++--------+-----------+--------+-----------+---------+-----------+--------+--------+-----------+
+| S01    | Arjun     |     50 | Jaipur    | P01     | Bolt      | Black  |      2 | Jaipur    |
+| S02    | Meera     |    120 | Mumbai    | P02     | Nut       | Silver |      1 | Mumbai    |
+| S03    | Rohan     |    200 | Delhi     | P03     | Screw     | Grey   |      3 | Delhi     |
+| S04    | Ananya    |    300 | Chennai   | P04     | Washer    | Red    |      2 | Chennai   |
+| S05    | Suresh    |    180 | Pune      | P05     | Pin       | Gold   |      1 | Pune      |
++--------+-----------+--------+-----------+---------+-----------+--------+--------+-----------+
+5 rows in set (0.00 sec)
+
+mysql> select * from shipment right outer join project on project.pro_no=shipment.pro_no;
++---------+--------+----------+---------+--------+------------------+-----------+
+| part_no | pro_no | quantity | supp_no | pro_no | pro_name         | city      |
++---------+--------+----------+---------+--------+------------------+-----------+
+| P01     | PR10   |      100 | S01     | PR10   | IT Park Project  | Bengaluru |
+| P02     | PR11   |      120 | S02     | PR11   | Flyover Build    | Mumbai    |
+| P03     | PR12   |      150 | S03     | PR12   | Mall Expansion   | Delhi     |
+| P04     | PR13   |      170 | S04     | PR13   | Hospital Upgrade | Chennai   |
+| P05     | PR14   |      200 | S05     | PR14   | Stadium Build    | Pune      |
++---------+--------+----------+---------+--------+------------------+-----------+
+5 rows in set (0.00 sec)
+
+mysql> select part_no, sum(quantity) as total_qty from shipment group by part_no;
++---------+-----------+
+| part_no | total_qty |
++---------+-----------+
+| P01     |       100 |
+| P02     |       120 |
+| P03     |       150 |
+| P04     |       170 |
+| P05     |       200 |
++---------+-----------+
+5 rows in set (0.00 sec)
+
+mysql> select supplier.sup_name
+    -> from supplier
+    -> join shipment on supplier.sup_no = shipment.supp_no
+    -> join part on part.part_no = shipment.part_no
+    -> where part.color = 'Grey';
++----------+
+| sup_name |
++----------+
+| Rohan    |
++----------+
+1 row in set (0.00 sec)
+
+mysql> select * from supplier left join part on supplier.city=part.city;
++--------+-----------+--------+-----------+---------+-----------+--------+--------+-----------+
+| sup_no | sup_name  | status | city      | part_no | part_name | color  | weight | city      |
++--------+-----------+--------+-----------+---------+-----------+--------+--------+-----------+
+| S01    | Arjun     |     50 | Jaipur    | P01     | Bolt      | Black  |      2 | Jaipur    |
+| S02    | Meera     |    120 | Mumbai    | P02     | Nut       | Silver |      1 | Mumbai    |
+| S03    | Rohan     |    200 | Delhi     | P03     | Screw     | Grey   |      3 | Delhi     |
+| S04    | Ananya    |    300 | Chennai   | P04     | Washer    | Red    |      2 | Chennai   |
+| S05    | Suresh    |    180 | Pune      | P05     | Pin       | Gold   |      1 | Pune      |
+| S06    | Kavya     |    220 | Lucknow   | NULL    | NULL      | NULL   |   NULL | NULL      |
+| S07    | Nikhil    |    260 | Surat     | NULL    | NULL      | NULL   |   NULL | NULL      |
++--------+-----------+--------+-----------+---------+-----------+--------+--------+-----------+
+7 rows in set (0.00 sec)

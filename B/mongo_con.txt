@@ -1,0 +1,45 @@
+bvcoew@bvcoew-OptiPlex-3000:~$ sudo mongo
+[sudo] password for bvcoew: 
+MongoDB shell version v3.6.8
+connecting to: mongodb://127.0.0.1:27017
+Implicit session: session { "id" : UUID("969ff634-20c4-4e56-83fe-aec311e8ea10") }
+MongoDB server version: 3.6.8
+Server has startup warnings: 
+2025-10-14T11:34:15.599+0530 I STORAGE  [initandlisten] 
+2025-10-14T11:34:15.599+0530 I STORAGE  [initandlisten] ** WARNING: Using the XFS filesystem is strongly recommended with the WiredTiger storage engine
+2025-10-14T11:34:15.599+0530 I STORAGE  [initandlisten] **          See http://dochub.mongodb.org/core/prodnotes-filesystem
+2025-10-14T11:34:16.220+0530 I CONTROL  [initandlisten] 
+2025-10-14T11:34:16.220+0530 I CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2025-10-14T11:34:16.220+0530 I CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+2025-10-14T11:34:16.220+0530 I CONTROL  [initandlisten] 
+> show databases
+admin       0.000GB
+companyDB   0.000GB
+config      0.000GB
+local       0.000GB
+myDatabase  0.000GB
+shoppe      0.000GB
+shoppee     0.000GB
+student     0.000GB
+testdb      0.000GB
+trc         0.000GB
+> use student
+switched to db student
+> show collections
+students
+> db.students.find()
+{ "_id" : ObjectId("68ee048d17d0c3cdb11732c7"), "name" : "aditi", "class" : "TE", "roll" : 3202 }
+{ "_id" : ObjectId("68ee04ab17d0c3cdb11732c8"), "name" : "MIHIKA", "class" : "TE", "roll" : 3232 }
+{ "_id" : ObjectId("68ee052e17d0c3cdb11732c9"), "name" : "ANJALI", "class" : "te", "roll" : 3206 }
+> 
+
+
+
+
+
+
+
+
+
+
+

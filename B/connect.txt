@@ -1,0 +1,208 @@
+package mongodb;
+
+import com.mongodb.MongoClient;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.DBCursor;
+
+import java.util.Scanner;
+
+public class cconmongo {
+    public static void main(String[] args) {
+        try {
+            MongoClient mongoClient = new MongoClient("localhost", 27017);
+            DB db = mongoClient.getDB("student"); // database name
+            DBCollection collection = db.getCollection("students"); // collection name
+
+            Scanner scanner = new Scanner(System.in);
+            int choice;
+
+            do {
+                System.out.println("\n--- Student Database Menu ---");
+                System.out.println("1. Add Student");
+                System.out.println("2. Edit Student");
+                System.out.println("3. Search Student");
+                System.out.println("4. Delete Student");
+                System.out.println("5. Exit");
+                System.out.print("Enter your choice: ");
+                choice = scanner.nextInt();
+                scanner.nextLine(); // consume newline
+
+                switch (choice) {
+                    case 1: // Add Student
+                        System.out.print("Enter name: ");
+                        String name = scanner.nextLine();
+
+                        System.out.print("Enter class: ");
+                        String clazz = scanner.nextLine();
+
+                        System.out.print("Enter roll number: ");
+                        int roll = scanner.nextInt();
+                        scanner.nextLine();
+
+                        BasicDBObject newStudent = new BasicDBObject("name", name)
+                                .append("class", clazz)
+                                .append("roll", roll);
+
+                        collection.insert(newStudent);
+                        System.out.println("Student added successfully!");
+                        break;
+
+                    case 2: // Edit Student
+                        System.out.print("Enter roll number of student to update: ");
+                        int editRoll = scanner.nextInt();
+                        scanner.nextLine();
+
+                        System.out.print("Enter new name: ");
+                        String newName = scanner.nextLine();
+
+                        System.out.print("Enter new class: ");
+                        String newClazz = scanner.nextLine();
+
+                        BasicDBObject editQuery = new BasicDBObject("roll", editRoll);
+                        BasicDBObject updatedFields = new BasicDBObject()
+                                .append("name", newName)
+                                .append("class", newClazz);
+
+                        BasicDBObject updateObj = new BasicDBObject("$set", updatedFields);
+
+                        collection.update(editQuery, updateObj);
+                        System.out.println("Student updated successfully!");
+                        break;
+
+                    case 3: // Search Student
+                        System.out.print("Enter roll number to search: ");
+                        int searchRoll = scanner.nextInt();
+                        scanner.nextLine();
+
+                        BasicDBObject searchQuery = new BasicDBObject("roll", searchRoll);
+                        DBCursor searchCursor = collection.find(searchQuery);
+
+                        if (searchCursor.hasNext()) {
+                            System.out.println("Student found: " + searchCursor.next());
+                        } else {
+                            System.out.println("Student not found.");
+                        }
+                        searchCursor.close();
+                        break;
+
+                    case 4: // Delete Student
+                        System.out.print("Enter roll number to delete: ");
+                        int deleteRoll = scanner.nextInt();
+                        scanner.nextLine();
+
+                        BasicDBObject deleteQuery = new BasicDBObject("roll", deleteRoll);
+                        collection.remove(deleteQuery);
+
+                        System.out.println("Student deleted successfully!");
+                        break;
+
+                    case 5: // Exit
+                        System.out.println("Exiting...");
+                        break;
+
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                        break;
+                }
+
+            } while (choice != 5);
+
+            mongoClient.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+ output:
+ -- Student Database Menu ---
+1. Add Student
+2. Edit Student
+3. Search Student
+4. Delete Student
+5. Exit
+Enter your choice: 1
+Enter name: ansika
+Enter class: te
+Enter roll number: 3204
+Student added successfully!
+
+--- Student Database Menu ---
+1. Add Student
+2. Edit Student
+3. Search Student
+4. Delete Student
+5. Exit
+Enter your choice: 1
+Enter name: aditi
+Enter class: TE
+Enter roll number: 3202
+Student added successfully!
+
+--- Student Database Menu ---
+1. Add Student
+2. Edit Student
+3. Search Student
+4. Delete Student
+5. Exit
+Enter your choice: 1
+Enter name: mIHIKA
+Enter class: TE
+Enter roll number: 3232
+Student added successfully!
+
+--- Student Database Menu ---
+1. Add Student
+2. Edit Student
+3. Search Student
+4. Delete Student
+5. Exit
+Enter your choice: 3
+Enter roll number to search: 3204
+Student found: { "_id" : { "$oid" : "68ee047b17d0c3cdb11732c6"} , "name" : "ansika" , "class" : "te" , "roll" : 3204}
+
+--- Student Database Menu ---
+1. Add Student
+2. Edit Student
+3. Search Student
+4. Delete Student
+5. Exit
+Enter your choice: 2
+Enter roll number of student to update: 3232
+Enter new name: MIHIKA
+Enter new class: TE
+Student updated successfully!
+
+--- Student Database Menu ---
+1. Add Student
+2. Edit Student
+3. Search Student
+4. Delete Student
+5. Exit
+Enter your choice: 4
+Enter roll number to delete: 3204
+Student deleted successfully!
+
+--- Student Database Menu ---
+1. Add Student
+2. Edit Student
+3. Search Student
+4. Delete Student
+5. Exit
+Enter your choice: 1
+Enter name: ANJALI
+Enter class: te
+Enter roll number: 3206
+Student added successfully!
+
+--- Student Database Menu ---
+1. Add Student
+2. Edit Student
+3. Search Student
+4. Delete Student
+5. Exit
+Enter your choice: 5
+Exiting...
+

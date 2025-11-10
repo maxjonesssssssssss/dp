@@ -1,0 +1,81 @@
+mysql> create database student;
+ERROR 1007 (HY000): Can't create database 'student'; database exists
+mysql> create database student1;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> use student1;
+Database changed
+Query OK, 0 rows affected (0.02 sec)o int, Name varchar(10), marks int,Result varchar(10));
+
+mysql> insert into rollnumber values(3201,"Aditi",78,"Pass");
+Query OK, 1 row affected (0.02 sec)
+
+mysql> insert into rollnumber values(3221,"Mihika",70,"Pass");
+Query OK, 1 row affected (0.01 sec)
+
+mysql> insert into rollnumber values(3234,"Nupur",69,"Pass");
+Query OK, 1 row affected (0.01 sec)
+
+mysql> insert into rollnumber values(3240,"Vaidehi",20,"Fail");
+Query OK, 1 row affected (0.01 sec)
+
+mysql> select * from rollnumber;
++--------+---------+-------+--------+
+| RollNo | Name    | marks | Result |
++--------+---------+-------+--------+
+|   3201 | Aditi   |    78 | Pass   |
+|   3221 | Mihika  |    70 | Pass   |
+|   3234 | Nupur   |    69 | Pass   |
+|   3240 | Vaidehi |    20 | Fail   |
++--------+---------+-------+--------+
+4 rows in set (0.00 sec)
+
+mysql> delimiter $$
+mysql> create procedure ShowPassedStudents()
+    -> begin
+    -> declare v_RollNo int;
+    -> declare v_Name varchar(10);
+    -> declare v_marks int;
+    -> declare v_Result varchar(10);
+    -> declare done int default 0;
+    -> declare pass_cursor cursor for select RollNo,Name,marks,Result from rollnumber where Result="Pass";
+    -> declare continue handler for not found set done=1;
+    -> open pass_cursor;
+    -> read_loop:LOOP
+    -> fetch pass_cursor into v_RollNo,v_Name,v_marks,v_Result;
+    -> if done then leave read_loop;
+    -> end if;
+    -> select v_RollNo as RollNum,v_Name as StudentName,v_marks as Marks,v_Result as Result;
+    -> end loop;
+    -> close pass_cursor;
+    -> end $$
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> delimiter;
+    -> call ShowPassedStudents();
+    -> end $$
++---------+-------------+-------+--------+
+| RollNum | StudentName | Marks | Result |
++---------+-------------+-------+--------+
+|    3201 | Aditi       |    78 | Pass   |
++---------+-------------+-------+--------+
+1 row in set (0.00 sec)
+
++---------+-------------+-------+--------+
+| RollNum | StudentName | Marks | Result |
++---------+-------------+-------+--------+
+|    3221 | Mihika      |    70 | Pass   |
++---------+-------------+-------+--------+
+1 row in set (0.00 sec)
+
++---------+-------------+-------+--------+
+| RollNum | StudentName | Marks | Result |
++---------+-------------+-------+--------+
+|    3234 | Nupur       |    69 | Pass   |
++---------+-------------+-------+--------+
+1 row in set (0.00 sec)
+
+Query OK, 0 rows affected (0.00 sec)
+
+
+

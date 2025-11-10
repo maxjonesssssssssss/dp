@@ -1,0 +1,191 @@
+> use companyDB
+switched to db companyDB
+> show dbs
+EDB           0.000GB
+MuicLib       0.000GB
+Tcsin         0.000GB
+admin         0.000GB
+company       0.000GB
+companyDB     0.000GB
+config        0.000GB
+local         0.000GB
+natural       0.000GB
+natural1      0.000GB
+shoppe        0.000GB
+student       0.000GB
+student_info  0.000GB
+studentinfo   0.000GB
+tbc           0.000GB
+> db.productinfo.insertMany([{ID:1,ProductName:"SmartPhone",Price:15000,City:"Pune",ProductSpecification:{color:"Black",storage:"128GB"}},{ID:2,ProductName:"Speaker",Price:2000,City:"Pune",ProductSpecification:{color:"Transparent",watt:20}},{ID:3,ProductName:"Bottle",Price:200,City:"Mumbai",ProductSpecification:{color:"Silver",material:"Steel"}},{ID:4,ProductName:"Shampoo",Price:1200,City:"Delhi",ProductSpecification:{size:"500ml",type:"Herbal"}},{ID:5,ProductName:"Shoes",Price:25000,City:"Pune",ProductSpecification:{size:9,brand:"Nike"}},{ID:6,ProductName:"MicrowaveOven",Price:1800,City:"Bengaluru",ProductSpecification:{power:"750W"}}]);
+{
+	"acknowledged" : true,
+	"insertedIds" : [
+		ObjectId("68d3972c79236e826760ddef"),
+		ObjectId("68d3972c79236e826760ddf0"),
+		ObjectId("68d3972c79236e826760ddf1"),
+		ObjectId("68d3972c79236e826760ddf2"),
+		ObjectId("68d3972c79236e826760ddf3"),
+		ObjectId("68d3972c79236e826760ddf4")
+	]
+}
+> db.productinfo.find().pretty()
+{
+	"_id" : 1,
+	"productName" : "Smartphone",
+	"price" : 15000,
+	"city" : "Pune"
+}
+{ "_id" : 2, "productName" : "Speaker", "price" : 3000, "city" : "Mumbai" }
+{
+	"_id" : ObjectId("68d3972c79236e826760ddef"),
+	"ID" : 1,
+	"ProductName" : "SmartPhone",
+	"Price" : 15000,
+	"City" : "Pune",
+	"ProductSpecification" : {
+		"color" : "Black",
+		"storage" : "128GB"
+	}
+}
+{
+	"_id" : ObjectId("68d3972c79236e826760ddf0"),
+	"ID" : 2,
+	"ProductName" : "Speaker",
+	"Price" : 2000,
+	"City" : "Pune",
+	"ProductSpecification" : {
+		"color" : "Transparent",
+		"watt" : 20
+	}
+}
+{
+	"_id" : ObjectId("68d3972c79236e826760ddf1"),
+	"ID" : 3,
+	"ProductName" : "Bottle",
+	"Price" : 200,
+	"City" : "Mumbai",
+	"ProductSpecification" : {
+		"color" : "Silver",
+		"material" : "Steel"
+	}
+}
+{
+	"_id" : ObjectId("68d3972c79236e826760ddf2"),
+	"ID" : 4,
+	"ProductName" : "Shampoo",
+	"Price" : 1200,
+	"City" : "Delhi",
+	"ProductSpecification" : {
+		"size" : "500ml",
+		"type" : "Herbal"
+	}
+}
+{
+	"_id" : ObjectId("68d3972c79236e826760ddf3"),
+	"ID" : 5,
+	"ProductName" : "Shoes",
+	"Price" : 25000,
+	"City" : "Pune",
+	"ProductSpecification" : {
+		"size" : 9,
+		"brand" : "Nike"
+	}
+}
+{
+	"_id" : ObjectId("68d3972c79236e826760ddf4"),
+	"ID" : 6,
+	"ProductName" : "MicrowaveOven",
+	"Price" : 1800,
+	"City" : "Bengaluru",
+	"ProductSpecification" : {
+		"power" : "750W"
+	}
+}
+> db.productinfo.find({city:"Pune"})
+{ "_id" : 1, "productName" : "Smartphone", "price" : 15000, "city" : "Pune" }
+> db.productinfo.updateOne({ID:1},{$set:{price:20000}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.productinfo.updateOne({ID:2},{$set:{ProductSpecification:["Transparent","20W","Bluetooth 5.0"]}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.productinfo.find({ productName: { $regex: /^s/i } })
+{ "_id" : 1, "productName" : "Smartphone", "price" : 15000, "city" : "Pune" }
+{ "_id" : 2, "productName" : "Speaker", "price" : 3000, "city":"Pune"}
+> db.productinfo.updateOne(
+...   { ID: 3 },
+...   { $unset: { ProductSpecification: "" } }
+... )
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.productinfo.deleteOne({ ProductName: "Bottle" })
+{ "acknowledged" : true, "deletedCount" : 1 }
+> db.productinfo.updateOne(
+...   { ID: 5 },                                 
+...   { $set: { ProductName: "Running Shoes" } }   
+... )
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.productinfo.find().pretty()
+{
+	"_id" : 1,
+	"productName" : "Smartphone",
+	"price" : 15000,
+	"city" : "Pune"
+}
+{ "_id" : 2, "productName" : "Speaker", "price" : 3000, "city" : "Mumbai" }
+{
+	"_id" : ObjectId("68d3972c79236e826760ddef"),
+	"ID" : 1,
+	"ProductName" : "SmartPhone",
+	"Price" : 15000,
+	"City" : "Pune",
+	"ProductSpecification" : {
+		"color" : "Black",
+		"storage" : "128GB"
+	},
+	"price" : 20000
+}
+{
+	"_id" : ObjectId("68d3972c79236e826760ddf0"),
+	"ID" : 2,
+	"ProductName" : "Speaker",
+	"Price" : 2000,
+	"City" : "Pune",
+	"ProductSpecification" : [
+		"Transparent",
+		"20W",
+		"Bluetooth 5.0"
+	]
+}
+{
+	"_id" : ObjectId("68d3972c79236e826760ddf2"),
+	"ID" : 4,
+	"ProductName" : "Shampoo",
+	"Price" : 1200,
+	"City" : "Delhi",
+	"ProductSpecification" : {
+		"size" : "500ml",
+		"type" : "Herbal"
+	}
+}
+{
+	"_id" : ObjectId("68d3972c79236e826760ddf3"),
+	"ID" : 5,
+	"ProductName" : "Running Shoes",
+	"Price" : 25000,
+	"City" : "Pune",
+	"ProductSpecification" : {
+		"size" : 9,
+		"brand" : "Nike"
+	}
+}
+{
+	"_id" : ObjectId("68d3972c79236e826760ddf4"),
+	"ID" : 6,
+	"ProductName" : "MicrowaveOven",
+	"Price" : 1800,
+	"City" : "Bengaluru",
+	"ProductSpecification" : {
+		"power" : "750W"
+	}
+}
+> 
+
+
