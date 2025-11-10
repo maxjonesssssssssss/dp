@@ -1,0 +1,30 @@
+mysql> use emp;
+
+mysql> create table EmpGrade(id int primary key, name varchar(100), grade varchar(10));
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> DELIMITER $$
+mysql> 
+mysql> CREATE FUNCTION getEmpGrade(emp_id INT) RETURNS VARCHAR(10)
+    -> READS SQL DATA
+    -> BEGIN
+    ->     DECLARE empGrade VARCHAR(10);
+    -> 
+    ->     SELECT grade INTO empGrade
+    ->     FROM EmpGrade
+    ->     WHERE id = emp_id;
+    -> 
+    ->     RETURN empGrade;
+    -> END $$
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> DELIMITER ;
+mysql> SELECT getEmpGrade(2);
++----------------+
+| getEmpGrade(2) |
++----------------+
+| A              |
++----------------+
+1 row in set (0.01 sec)
+
+
