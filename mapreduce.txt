@@ -1,0 +1,20 @@
+company> var mapFunction = function() {
+... emit(this.dept, this.salary);};
+
+company> var reduceFunction = function(keyDept, valueSalaries) {
+... return Array.sum(valueSalaries);};
+
+company> db.Employeeinfo.mapReduce (
+... mapFunction,
+... reduceFunction,
+... {out: "Total_Salary_by_Dept"})
+DeprecationWarning: Collection.mapReduce() is deprecated. Use an aggregation instead.
+See https://mongodb.com/docs/manual/core/map-reduce for details.
+{ result: 'Total_Salary_by_Dept', ok: 1 }
+
+company> db.Total_Salary_by_Dept.find().pretty()
+[
+  { _id: 'R&D', value: 1200000 },
+  { _id: 'IT', value: 3200000 },
+  { _id: 'HR', value: 1000000 },
+  { _id: 'SDE', value: 4900000 }
