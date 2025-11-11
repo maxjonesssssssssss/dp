@@ -1,0 +1,54 @@
+1️⃣ Create a database named MusicLib
+use MusicLib
+
+2️⃣ Show all the databases present on the server
+show dbs
+
+3️⃣ Create collection libraryinfo and insert 5–6 documents
+db.libraryinfo.insertMany([
+  { _id: 1, name: "Rafi", type: "classic", albuminfo: "Golden Hits", company: "Saregama" },
+  { _id: 2, name: "Sonu Nigam", type: "pop", albuminfo: "Melody Beats", company: "T-Series" },
+  { _id: 3, name: "Shreya Ghoshal", type: "romantic", albuminfo: "Love Tunes", company: "Sony Music" },
+  { _id: 4, name: "Asha Bhosle", type: "classic", albuminfo: "Old is Gold", company: "Universal" },
+  { _id: 5, name: "Arijit Singh", type: "pop", albuminfo: "Heart Songs", company: "Zee Music" },
+  { _id: 6, name: "Shaan", type: "rock", albuminfo: "Soul Rhythm", company: "Sony Music" }
+])
+
+4️⃣ Show all the documents in the collection
+db.libraryinfo.find().pretty()
+
+5️⃣ Find albuminfo from type = "classic"
+db.libraryinfo.find({ type: "classic" }, { albuminfo: 1, _id: 0 })
+
+6️⃣ Update name for an albuminfo
+db.libraryinfo.updateOne(
+  { albuminfo: "Heart Songs" },
+  { $set: { name: "Arijit S." } }
+)
+
+7️⃣ Create an array for volume numbers where _id = 1
+db.libraryinfo.updateOne(
+  { _id: 1 },
+  { $set: { volume_no: [1, 2, 3, 4] } }
+)
+
+8️⃣ List all album names starting with “S” (using regex and logical operator)
+db.libraryinfo.find(
+  { name: { $regex: /^S/i } },
+  { name: 1, albuminfo: 1, _id: 0 }
+)
+
+9️⃣ Update document with _id = 5 with a new name
+db.libraryinfo.updateOne(
+  { _id: 5 },
+  { $set: { name: "Arijit Singh Raj" } }
+)
+
+🔟 Remove company info for _id = 3
+db.libraryinfo.updateOne(
+  { _id: 3 },
+  { $unset: { company: "" } }
+)
+
+11️⃣ Remove the document with name = "Rafi"
+db.libraryinfo.deleteOne({ name: "Rafi" })

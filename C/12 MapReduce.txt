@@ -1,0 +1,42 @@
+⚙️ Step 1️⃣: Create Database and Collection
+
+Use your database:
+
+use MusicLib
+
+
+Create a new collection named order and insert some sample data:
+
+db.order.insertMany([
+  { album_id: 1, name: "Rafi", cost: 500 },
+  { album_id: 2, name: "Sonu Nigam", cost: 300 },
+  { album_id: 3, name: "Rafi", cost: 200 },
+  { album_id: 4, name: "Shreya Ghoshal", cost: 400 },
+  { album_id: 5, name: "Sonu Nigam", cost: 100 },
+  { album_id: 6, name: "Asha Bhosle", cost: 350 }
+])
+
+
+Step 2️⃣: Define the Map Function
+
+
+var mapFunction = function() {
+  emit(this.name, this.cost);
+};
+
+Step 3️⃣: Define the Reduce Function
+
+
+var reduceFunction = function(key, values) {
+  return Array.sum(values);
+};
+
+Step 4️⃣: Execute MapReduce
+db.order.mapReduce(
+  mapFunction,
+  reduceFunction,
+  { out: "total_cost_per_artist" }
+)
+
+Step 5️⃣: View Results
+db.total_cost_per_artist.find().pretty()

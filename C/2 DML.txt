@@ -1,0 +1,87 @@
+1. Create Table person
+CREATE TABLE person(driver_id INT PRIMARY KEY, name VARCHAR(50), address
+VARCHAR(100));
+
+2. Create Table car
+CREATE TABLE car(license VARCHAR(20) PRIMARY KEY, model VARCHAR(30), year
+INT);
+
+3. Create Table owns
+CREATE TABLE owns(driver_id INT, license VARCHAR(20), FOREIGN
+KEY(driver_id) REFERENCES person(driver_id), FOREIGN KEY(license)
+REFERENCES car(license));
+
+4. Create Table participated
+CREATE TABLE participated(driver_id INT, license VARCHAR(20),
+report_number INT, damage_amount DECIMAL(10,2), FOREIGN KEY(driver_id)
+REFERENCES person(driver_id), FOREIGN KEY(license) REFERENCES
+car(license), FOREIGN KEY(report_number) REFERENCES accident(report_no));
+
+5. Create Table accident
+CREATE TABLE accident(report_no INT PRIMARY KEY, date DATE, location
+VARCHAR(100));
+
+6. Display driver_name from Pune
+SELECT name FROM person WHERE address = 'Pune';
+
+7. Find all i10 model car
+SELECT * FROM car WHERE model = 'i10';
+
+8. License of driver with damage > 1 lakh
+SELECT license FROM participated WHERE damage_amount > 100000;
+
+9. Find all accidents on Pune-Satara Road
+SELECT * FROM accident WHERE location = 'Pune-Satara Road';
+
+10. Find driver_id who are not involved in any accident
+SELECT driver_id, name FROM person WHERE driver_id NOT IN (SELECT
+driver_id FROM participated);
+
+11. Find the average damage_amount
+SELECT AVG(damage_amount) AS avg_damage FROM participated;
+
+12. Find maximum damage_amount on Pune-Mumbai Road
+SELECT MAX(damage_amount) AS max_damage FROM participated p JOIN accident
+a ON p.report_number = a.report_no WHERE a.location = 'Pune-Mumbai Road';
+
+13. Find all accidents in year 2007
+SELECT * FROM accident WHERE YEAR(date) = 2007;
+
+14. Find car registered before 2005
+SELECT * FROM car WHERE year < 2005;
+
+15. Find all driver_name with model of car
+SELECT p.name, c.model FROM person p JOIN owns o ON p.driver_id =
+o.driver_id JOIN car c ON o.license = c.license;
+16. Delete Person Resident of Pune City
+DELETE FROM person WHERE address = 'Pune';
+
+17. Update Model Honda from year 2015 to 2012
+UPDATE car SET year = 2012 WHERE model = 'Honda' AND year = 2015;
+
+18. Update damage amount by 5% for accident at Pune Satara Road
+UPDATE participated p JOIN accident a ON p.report_number = a.report_no
+SET p.damage_amount = p.damage_amount * 1.05 WHERE a.location =
+'Pune-Satara Road';
+
+19. Delete Swift belonging to Nihar Raj
+DELETE FROM car WHERE license IN (SELECT license FROM (SELECT o.license
+FROM owns o JOIN person p ON o.driver_id = p.driver_id JOIN car c ON
+o.license = c.license WHERE p.name = 'Nihar Raj' AND c.model = 'Swift')
+AS temp);
+
+20. Find person who owns car but not participated in accident
+SELECT p.name FROM person p JOIN owns o ON p.driver_id = o.driver_id
+WHERE p.driver_id NOT IN (SELECT driver_id FROM participated);
+
+21. Find person who owns car but participated in accident
+SELECT DISTINCT p.name FROM person p JOIN participated pa ON p.driver_id;
+
+22. Find average damage amount on Pune-Mumbai Express Way
+SELECT AVG(p.damage_amount) AS avg_damage FROM participated p JOIN
+accident a ON p.report_number = a.report_no WHERE a.location =
+'Pune-Mumbai Road';
+
+23. Find Maximum and Minimum damage amount
+SELECT MAX(damage_amount) AS max_damage, MIN(damage_amount) AS min_damage
+FROM participated;

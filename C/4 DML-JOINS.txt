@@ -1,0 +1,109 @@
+1. Create table person
+CREATE TABLE person (
+    driver_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    address VARCHAR(100)
+);
+
+2. Create table car
+CREATE TABLE car (
+    license VARCHAR(20) PRIMARY KEY,
+    model VARCHAR(30),
+    year INT
+);
+
+3. Create table owns
+CREATE TABLE owns (
+    driver_id INT,
+    license VARCHAR(20),
+    FOREIGN KEY (driver_id) REFERENCES person(driver_id),
+    FOREIGN KEY (license) REFERENCES car(license)
+);
+
+4. Create table participated
+CREATE TABLE participated (
+    driver_id INT,
+    license VARCHAR(20),
+    report_number INT,
+    damage_amount DECIMAL(10,2),
+    FOREIGN KEY (driver_id) REFERENCES person(driver_id),
+    FOREIGN KEY (license) REFERENCES car(license),
+    FOREIGN KEY (report_number) REFERENCES accident(report_no)
+);
+
+5. Create table accident
+CREATE TABLE accident (
+    report_no INT PRIMARY KEY,
+    date DATE,
+    location VARCHAR(100)
+);
+
+6. Perform INNER JOIN on person and participated on driver_id
+SELECT p.driver_id, p.name, p.address, pa.report_number, pa.damage_amount
+FROM person p
+INNER JOIN participated pa
+ON p.driver_id = pa.driver_id;
+
+7. Perform LEFT OUTER JOIN on person and participated on driver_id
+SELECT p.driver_id, p.name, pa.report_number, pa.damage_amount
+FROM person p
+LEFT JOIN participated pa
+ON p.driver_id = pa.driver_id;
+
+8. Perform RIGHT OUTER JOIN on person and participated on driver_id
+SELECT p.driver_id, p.name, pa.report_number, pa.damage_amount
+FROM person p
+RIGHT JOIN participated pa
+ON p.driver_id = pa.driver_id;
+
+9. Perform NATURAL INNER JOIN on person and participated
+SELECT *
+FROM person
+NATURAL JOIN participated;
+
+10. Perform NATURAL LEFT OUTER JOIN on person and participated
+
+MySQL doesn’t directly support NATURAL LEFT OUTER JOIN,
+use this equivalent:
+
+SELECT *
+FROM person
+NATURAL LEFT JOIN participated;
+
+11. Perform NATURAL RIGHT OUTER JOIN on person and participated
+
+Equivalent form:
+
+SELECT *
+FROM person
+NATURAL RIGHT JOIN participated;
+
+12. Create a view for person participated in accident (driver name, license, report_number, damage_amount)
+CREATE VIEW person_participated_view AS
+SELECT p.name AS driver_name, pa.license, pa.report_number, pa.damage_amount
+FROM person p
+JOIN participated pa ON p.driver_id = pa.driver_id;
+
+13. Display view for accidents having damage amount above average
+SELECT *
+FROM person_participated_view
+WHERE damage_amount > (SELECT AVG(damage_amount) FROM participated);
+
+14. Nested query to find person name and license in descending order of year
+SELECT p.name, c.license, c.year
+FROM person p
+JOIN owns o ON p.driver_id = o.driver_id
+JOIN car c ON o.license = c.license
+WHERE c.year IN (SELECT year FROM car)
+ORDER BY c.year DESC;
+
+15. Nested query to find driver_id and damage_amount having more than average
+SELECT driver_id, damage_amount
+FROM participated
+WHERE damage_amount > (SELECT AVG(damage_amount) FROM participated);
+
+16. Perform GROUP BY for location to calculate total damage amount
+SELECT a.location, SUM(p.damage_amount) AS total_damage
+FROM accident a
+JOIN participated p ON a.report_no = p.report_number
+GROUP BY a.location;

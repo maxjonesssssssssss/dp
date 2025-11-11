@@ -1,0 +1,98 @@
+💿 Database: MusicLib
+use MusicLib
+
+Sample Data (if not already inserted)
+db.libraryinfo.insertMany([
+  { _id: 1, name: "Rafi", album: "Golden Hits", type: "classic", company: "Saregama", price: 500 },
+  { _id: 2, name: "Sonu Nigam", album: "Melody Beats", type: "pop", company: "T-Series", price: 300 },
+  { _id: 3, name: "Shreya Ghoshal", album: "Love Tunes", type: "romantic", company: "Sony Music", price: 400 },
+  { _id: 4, name: "Asha Bhosle", album: "Old is Gold", type: "classic", company: "Universal", price: 350 },
+  { _id: 5, name: "Arijit Singh", album: "Heart Songs", type: "pop", company: "T-Series", price: 600 }
+])
+
+⚙️ Indexing and Aggregation Implementation
+1️⃣ Find name from collection and use explain() with it
+
+👉 explain() shows how MongoDB will execute the query (with or without index).
+
+db.libraryinfo.find({ name: "Rafi" }).explain("executionStats")
+
+2️⃣ Create an index on album name
+
+👉 Improves search performance for album-based queries.
+
+db.libraryinfo.createIndex({ album: 1 })
+
+3️⃣ Search name xyz with explain
+
+👉 Shows how the query runs even if no result is found.
+
+db.libraryinfo.find({ name: "xyz" }).explain("executionStats")
+
+4️⃣ Create index on company name
+db.libraryinfo.createIndex({ company: 1 })
+
+5️⃣ List all system indexes
+
+👉 Shows all indexes present on the collection.
+
+db.libraryinfo.getIndexes()
+
+6️⃣ Drop index on company name
+
+👉 Removes the created index.
+
+db.libraryinfo.dropIndex({ company: 1 })
+
+🧮 Aggregation Operations
+7️⃣ Aggregation — Sort album collection by album name
+
+👉 Sorts alphabetically using $sort.
+
+db.libraryinfo.aggregate([
+  { $sort: { album: 1 } }
+])
+
+8️⃣ Aggregation — Match particular album, group by company, and show total price
+
+👉 Filters an album and groups company with total cost.
+
+db.libraryinfo.aggregate([
+  { $match: { album: "Heart Songs" } },
+  { $group: { _id: "$company", totalPrice: { $sum: "$price" } } }
+])
+
+9️⃣ Find album having minimum and maximum price
+
+👉 Uses $group and $min, $max.
+
+db.libraryinfo.aggregate([
+  {
+    $group: {
+      _id: null,
+      MinPrice: { $min: "$price" },
+      MaxPrice: { $max: "$price" }
+    }
+  }
+])
+
+🔟 Find album from company = “T-Series” with type = “classic”
+
+👉 Uses $and operator inside find() or $match in aggregation.
+
+db.libraryinfo.find({
+  $and: [{ company: "T-Series" }, { type: "classic" }]
+})
+
+
+(If you prefer aggregation:)
+
+db.libraryinfo.aggregate([
+  { $match: { company: "T-Series", type: "classic" } }
+])
+
+11️⃣ Project only 2 keys (fields) from collection
+
+👉 Shows only name and album fields.
+
+db.libraryinfo.find({}, { name: 1, album: 1, _id: 0 })

@@ -1,0 +1,47 @@
+SQL Assignment 2 - DDL Statements
+
+1. Create table person
+CREATE TABLE person ( driver_id INT PRIMARY KEY, name VARCHAR(50), address
+VARCHAR(100) );
+
+2. Create table car
+CREATE TABLE car ( license VARCHAR(20) PRIMARY KEY, model VARCHAR(30), year INT );
+
+3. Create table owns
+CREATE TABLE owns ( driver_id INT, license VARCHAR(20), FOREIGN KEY(driver_id)
+REFERENCES person(driver_id), FOREIGN KEY(license) REFERENCES car(license) );
+
+4. Create table participated
+CREATE TABLE participated ( driver_id INT, license VARCHAR(20), report_number INT,
+damage_amount DECIMAL(10,2), FOREIGN KEY(driver_id) REFERENCES person(driver_id),
+FOREIGN KEY(license) REFERENCES car(license), FOREIGN KEY(report_number) REFERENCES
+accident(report_no) );
+
+5. Create table accident
+CREATE TABLE accident ( report_no INT PRIMARY KEY, date DATE, location VARCHAR(100)
+);
+
+6. Create index on car using attribute license
+CREATE INDEX idx_car_license ON car(license);
+
+7. Create index on person using attribute driver_id
+CREATE INDEX idx_person_driver_id ON person(driver_id);
+
+8. Show all indexes on person
+SHOW INDEX FROM person;
+
+9. Drop index from person
+DROP INDEX idx_person_driver_id ON person;
+
+10. Create view for car participated in accident
+CREATE VIEW car_accident_view AS SELECT DISTINCT c.license, c.model, c.year FROM car
+c JOIN participated p ON c.license = p.license;
+
+11. Display view for person owns car
+CREATE VIEW person_owns_view AS SELECT p.name, c.model, c.year FROM person p JOIN
+owns o ON p.driver_id = o.driver_id JOIN car c ON o.license = c.license;
+
+12. Create view to display driver_name, model and year
+CREATE VIEW driver_car_view AS SELECT p.name AS driver_name, c.model, c.year FROM
+person p JOIN owns o ON p.driver_id = o.driver_id JOIN car c ON o.license =
+c.license;

@@ -1,0 +1,58 @@
+⚙️ Step 1: Create the Tables
+CREATE TABLE EmpInfo (
+    Id INT PRIMARY KEY,
+    Name VARCHAR(50),
+    Salary DECIMAL(10,2),
+    Marks INT
+);
+
+CREATE TABLE EmpGrade (
+    Id INT,
+    Name VARCHAR(50),
+    Grade VARCHAR(5)
+);
+
+
+
+✅ Corrected Stored Procedure
+DELIMITER $$
+
+CREATE PROCEDURE proc_Grade (
+    IN p_Id INT,
+    IN p_name VARCHAR(50),
+    IN p_salary INT,
+    IN p_marks INT
+)
+BEGIN
+    DECLARE v_Grade VARCHAR(5);
+
+    IF p_salary < 30000 AND p_marks >= 15000 THEN
+        SET v_Grade = 'P4';
+    ELSEIF p_salary BETWEEN 30000 AND 50000 THEN
+        SET v_Grade = 'P3';
+    ELSEIF p_salary < 80000 AND p_marks >= 50000 THEN
+        SET v_Grade = 'P2';
+    ELSEIF p_salary >= 80000 THEN
+        SET v_Grade = 'P1';
+    ELSE
+        SET v_Grade = 'NA';
+    END IF;
+
+    INSERT INTO EmpGrade(Id, Name, Grade)
+    VALUES (p_Id, p_name, v_Grade);
+END $$
+
+DELIMITER ;
+
+
+✅ Now call it:
+CALL proc_Grade(1,'Romita',25000,16000);
+CALL proc_Grade(2,'Vaibhavi',40000,30000);
+CALL proc_Grade(3,'Anuja',70000,55000);
+CALL proc_Grade(4,'Akshat',90000,60000);
+
+
+
+Then check the output:
+
+SELECT * FROM EmpGrade;
