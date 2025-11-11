@@ -1,0 +1,134 @@
+CREATE DATABASE supplychain;
+USE supplychain;
+
+CREATE TABLE supplier (
+	supp_no VARCHAR(10) PRIMARY KEY,
+    supp_name VARCHAR(20),
+    stat INT,
+    city VARCHAR(10)
+);
+
+CREATE TABLE part (
+	part_no VARCHAR(10) PRIMARY KEY,
+    part_name VARCHAR(20),
+    color VARCHAR(20),
+    weight INT,
+    city VARCHAR(10)
+);
+
+CREATE TABLE project (
+	pro_no VARCHAR(10) PRIMARY KEY,
+    pro_name VARCHAR(20),
+    city VARCHAR(10)
+);
+
+CREATE TABLE shipment (
+	supp_no VARCHAR(10),
+    part_no VARCHAR(10),
+    pro_no VARCHAR(10),
+    quantity INT,
+    PRIMARY KEY (supp_no, part_no, pro_no),
+    FOREIGN KEY (supp_no) REFERENCES supplier(supp_no),
+    FOREIGN KEY (part_no) REFERENCES part(part_no),
+    FOREIGN KEY (pro_no) REFERENCES project(pro_no)
+);
+
+DROP TABLE shipment;
+
+INSERT INTO supplier VALUES 
+('S1', 'Aditi', 20, 'Pune'),
+('S2', 'Mihika', 30, 'Bhopal'),
+('S3', 'Ansika', 10, 'Mumbai'),
+('S4', 'Romita', 25, 'Mumbai'),
+('S5', 'Kesar', 32, 'Pune');
+
+SELECT * FROM supplier;
+
+INSERT INTO part VALUES
+('P1', 'Bolt', 'Silver', 10, 'Pune'),
+('P2', 'Screw', 'Black', 20, 'Mumbai'),
+('P3', 'Wires', 'Red', 100, 'Bhopal'),
+('P4', 'Steel', 'Grey', 500, 'Pune'),
+('P5', 'Iron', 'Brown', 500, 'Mumbai');
+
+INSERT INTO project VALUES
+('PR1', 'Metro', 'Pune'),
+('PR2', 'Bridge', 'Mumbai'),
+('PR3', 'Roads', 'Bhopal'),
+('PR4', 'Building', 'Mumbai');
+
+SELECT * FROM part;
+SELECT * FROM project;
+
+INSERT INTO shipment VALUES
+('S1', 'P1', 'PR1', 100),
+('S2', 'P2', 'PR2', 200),
+('S3', 'P2', 'PR3', 250),
+('S4', 'P4', 'PR4', 150),
+('S5', 'P5', 'PR1', 300);
+
+SELECT * FROM shipment;
+
+CREATE INDEX idx_supp_no ON supplier(supp_no);
+CREATE INDEX idx_supp_name ON supplier(supp_name);
+
+SHOW INDEX FROM supplier;
+
+DROP INDEX idx_supp_name ON supplier;
+
+CREATE VIEW Pune_Suppliers AS
+SELECT DISTINCT s.supp_no, s.supp_name, s.city, p.part_name, j.pro_name
+FROM supplier s
+JOIN shipment sh ON s.supp_no = sh.supp_no
+JOIN part p ON sh.part_no = p.part_no
+JOIN project j ON sh.pro_no = j.pro_no
+WHERE j.city = 'Pune';
+
+DROP VIEW Mumbai_Suppliers;
+SELECT * FROM Pune_Suppliers;
+
+SELECT supp_no, supp_name
+FROM supplier 
+WHERE city = 'Mumbai' AND stat > 10;
+
+SELECT supp_name
+FROM supplier
+WHERE supp_no NOT IN (
+	SELECT supp_no FROM shipment WHERE part_no = 'P2'
+);
+
+SELECT DISTINCT s1.supp_no
+FROM shipment s1
+WHERE NOT EXISTS (
+	SELECT part_no FROM shipment s2
+    WHERE s2.supp_no = 'S2'
+    AND s2.part_no NOT IN (
+		SELECT part_no FROM shipment s3
+        WHERE s3.supp_no = s1.supp_no )
+);
+
+SELECT s1.supp_no AS supplier1, s2.supp_no AS supplier2
+FROM supplier s1, supplier s2
+WHERE s1.city = s2.city AND s1.supp_no < s2.supp_no;
+
+SELECT MAX(quantity) AS MAX_QTY, MIN(quantity) AS MIN_QTY
+FROM shipment
+WHERE part_no = 'P2';
+
+SELECT part_no 
+FROM shipment
+GROUP BY part_no
+HAVING COUNT(DISTINCT supp_no) > 1;
+
+SELECT s.supp_no, p.part_no
+FROM supplier s, part p
+WHERE s.city = p.city;
+
+SELECT DISTINCT s.city AS SupplierCity, p.city AS PartCity
+FROM supplier s
+JOIN shipment sh ON s.supp_no = sh.supp_no
+JOIN part p ON sh.part_no = p.part_no;
+
+SELECT part_no, SUM(quantity) AS TotalQty
+FROM shipment
+GROUP BY part_no;

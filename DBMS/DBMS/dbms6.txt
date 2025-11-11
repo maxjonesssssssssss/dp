@@ -1,0 +1,61 @@
+CREATE DATABASE bookDB;
+USE bookDB;
+
+CREATE TABLE borrower (
+	Roll INT PRIMARY KEY,
+    Issue_date DATE,
+    Name_of_Book VARCHAR(50),
+    status VARCHAR(20)
+);
+
+CREATE TABLE fine (
+	Roll INT,
+    cur_date DATE,
+    Amt INT,
+    FOREIGN KEY (Roll) REFERENCES borrower(Roll)
+);
+
+DROP TABLE fine;
+
+INSERT INTO borrower VALUES
+(101, '2025-09-20', 'DBMS', 'Issued'),
+(102, '2025-10-15', 'SPOS', 'Issued'),
+(103, '2025-11-04', 'TOC', 'Issued'),
+(104, '2025-10-02', 'HCI', 'Issued');
+
+DROP PROCEDURE calculate_fine;
+
+DELIMITER $$
+CREATE PROCEDURE calculate_fine(IN roll INT, IN book_name VARCHAR(50))
+BEGIN
+	DECLARE issue_date DATE;
+    DECLARE days_diff INT;
+    DECLARE fine_amt INT DEFAULT 0;
+    
+    SELECT Issue_date INTo issue_date
+    FROM borrower
+    WHERE Roll = roll AND Name_of_Book = book_name;
+    
+    SET days_diff = DATEDIFF(CURDATE(), issue_date);
+    
+    IF days_diff <= 14 THEN SET fine_amt = 0;
+    ELSEIF days_diff BETWEEN 15 AND 30 THEN SET fine_amt = days_diff *5;
+    ELSE SET fine_amt = days_diff*50;
+    END IF;
+    
+    INSERT INTO fine(Roll, cur_date, Amt)
+    VALUES (roll, CURDATE(), fine_amt);
+    
+    SELECT CONCAT('Fine Recorded. Days ', days_diff, ', Amount: Rs ', fine_amt) AS Result;
+
+END $$
+DELIMITER ;
+
+CALL calculate_fine(101, 'DBMS');
+CALL calculate_fine(102, 'SPOS');
+CALL calculate_fine(103, 'TOC');
+CALL calculate_fine(104, 'HCI');
+
+SELECT * FROM fine;
+
+SELECT DATEDIFF(CURDATE(), '2025-10-20');

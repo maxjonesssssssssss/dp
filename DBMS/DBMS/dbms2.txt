@@ -1,0 +1,134 @@
+CREATE DATABASE supplychain;
+USE supplychain;
+
+CREATE TABLE supplier (
+	supp_no VARCHAR(10) PRIMARY KEY,
+    supp_name VARCHAR(20),
+    stat INT,
+    city VARCHAR(10)
+);
+
+CREATE TABLE part (
+	part_no VARCHAR(10) PRIMARY KEY,
+    part_name VARCHAR(20),
+    color VARCHAR(20),
+    weight INT,
+    city VARCHAR(10)
+);
+
+CREATE TABLE project (
+	pro_no VARCHAR(10) PRIMARY KEY,
+    pro_name VARCHAR(20),
+    city VARCHAR(10)
+);
+
+CREATE TABLE shipment (
+	supp_no VARCHAR(10),
+    part_no VARCHAR(10),
+    pro_no VARCHAR(10),
+    quantity INT,
+    PRIMARY KEY (supp_no, part_no, pro_no),
+    FOREIGN KEY (supp_no) REFERENCES supplier(supp_no),
+    FOREIGN KEY (part_no) REFERENCES part(part_no),
+    FOREIGN KEY (pro_no) REFERENCES project(pro_no)
+);
+
+DROP TABLE shipment;
+
+INSERT INTO supplier VALUES 
+('S1', 'Aditi', 20, 'Pune'),
+('S2', 'Mihika', 30, 'Bhopal'),
+('S3', 'Ansika', 10, 'Mumbai'),
+('S4', 'Romita', 25, 'Mumbai'),
+('S5', 'Kesar', 32, 'Pune');
+
+SELECT * FROM supplier;
+
+INSERT INTO part VALUES
+('P1', 'Bolt', 'Silver', 10, 'Pune'),
+('P2', 'Screw', 'Black', 20, 'Mumbai'),
+('P3', 'Wires', 'Red', 100, 'Bhopal'),
+('P4', 'Steel', 'Grey', 500, 'Pune'),
+('P5', 'Iron', 'Brown', 500, 'Mumbai');
+
+INSERT INTO project VALUES
+('PR1', 'Metro', 'Pune'),
+('PR2', 'Bridge', 'Mumbai'),
+('PR3', 'Roads', 'Bhopal'),
+('PR4', 'Building', 'Mumbai');
+
+SELECT * FROM part;
+SELECT * FROM project;
+
+INSERT INTO shipment VALUES
+('S1', 'P1', 'PR1', 100),
+('S2', 'P2', 'PR2', 200),
+('S3', 'P2', 'PR3', 250),
+('S4', 'P4', 'PR4', 150),
+('S5', 'P5', 'PR1', 300);
+
+SELECT * FROM shipment;
+
+SELECT *
+FROM supplier a
+INNER JOIN supplier b ON
+a.city = b.city 
+WHERE a.supp_no < b.supp_no;
+
+SELECT DISTINCT s.supp_name
+FROM supplier s
+JOIN shipment sh ON s.supp_no = sh.supp_no
+WHERE sh.part_no IN (
+	SELECT part_no FROM shipment WHERE supp_no = 'S2'
+);
+
+SELECT supp_no, supp_name, stat 
+FROM supplier
+WHERE stat > (SELECT AVG(stat) FROM supplier);
+
+SELECT COUNT(*) FROM supplier;
+
+SELECT AVG(quantity) as "Average Quantity"
+FROM shipment
+GROUP BY supp_no;
+
+DELETE FROM shipment
+WHERE quantity = (SELECT MIN(quantity) FROM shipment WHERE part_no = 'P2');
+
+UPDATE supplier
+SET city = 'Mumbai'
+WHERE supp_no = 'S1';
+
+UPDATE shipment
+SET quantity = quantity+50
+WHERE part_no = 'P1';
+
+SELECT color, city
+FROM part
+WHERE city <> 'Mumbai' AND weight > 80;
+
+select part_no, weight * 1000 AS weight
+From part;
+
+UPDATE part
+SET color = 'Black'
+WHERE part_no = 'P1';
+
+UPDATE supplier
+SET supp_name = 'Vandana'
+WHERE supp_no = 'S1';
+
+DELETE FROM project
+WHERE city = 'Pune';
+
+ALTER TABLE shipment 
+ADD shipp_date DATE;
+
+SELECT * FROM shipment;
+
+UPDATE shipment
+SET shipp_date = '2024-07-13'
+WHERE supp_no = 'S2';
+
+ALTER TABLE shipment
+DROP COLUMN shipp_date;

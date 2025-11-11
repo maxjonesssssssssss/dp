@@ -1,0 +1,55 @@
+USE supplychain;
+
+CREATE INDEX idx_supp_no ON supplier(suoo_no);
+
+CREATE INDEX idx_supp_name ON supplier(supp_name);
+
+SHOW INDEX FROM supplier;
+
+DROP INDEX idx_supp_name ON supplier;
+
+CREATE VIEW supplier_Chennai AS
+SELECT *
+FROM supplier
+WHERE city = 'Chennai' AND stat > 25;
+
+INSERT INTO supplier_Chennai VALUES
+('S6', 'Aditi', 30, 'Chennai');
+
+DROP VIEW pune_suppliers;
+
+SELECT s.supp_no, s.supp_name, p.part_no, p.part_name, s.city
+FROM supplier s
+INNER JOIN part p
+ON s.city = p.city;
+
+SELECT sh.supp_no, sh.part_no, sh.pro_no, sh.quantity, p.pro_name, p.city
+FROM shipment sh
+LEFT JOIN project p
+ON sh.pro_no = p.pro_no;
+
+SELECT sh.supp_no, sh.part_no, sh.pro_no, sh.quantity, p.pro_name, p.city
+FROM shipment sh
+RIGHT JOIN project p
+ON sh.pro_no = p.pro_no;
+
+SELECT * FROM supplier NATURAL JOIN part;
+
+SELECT * FROM shipment NATURAL LEFT JOIN project;
+
+SELECT * FROM shipment NATURAL RIGHT JOIN project;
+
+SELECT DISTINCT s.*
+FROM supplier s
+JOIN shipment sh ON s.supp_no = sh.supp_no
+WHERE sh.part_no = 'P2';
+
+SELECT DISTINCT s.supp_name
+FROM supplier s
+JOIN shipment sh ON s.supp_no = sh.supp_no
+JOIN part p ON sh.part_no = p.part_no
+WHERE p.color = 'Black';
+
+SELECT part_no, SUM(quantity) AS totalQty
+FROM shipment
+GROUP BY part_no;

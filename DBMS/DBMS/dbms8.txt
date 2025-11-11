@@ -1,0 +1,72 @@
+USE bookDB;
+
+CREATE TABLE Library (
+	BookID INT PRIMARY KEY,
+    Title VARCHAR(50),
+    Author VARCHAR(50),
+    Price DECIMAL(10, 2)
+);
+DROP TABLE Librabry_Audit;
+CREATE TABLE Library_Audit (
+	AuditID INT AUTO_INCREMENT PRIMARY KEY,
+    BookID INT,
+    Title VARCHAR(50),
+    Author VARCHAR(50),
+    Price DECIMAL(10, 2),
+    Action_type VARCHAR(30),
+    Action_Time DATETIME
+);
+
+DELIMITER $$
+CREATE TRIGGER before_library_update
+BEFORE UPDATE ON Library
+FOR EACH ROW
+BEGIN
+	INSERT INTO Library_Audit (BookID, Title, Author, Price, Action_type, Action_Time)
+    VALUES (OLD.BookID, OLD.Title, OLD.Author, OLD.Price, 'BEFORE UPDATE', NOW());
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER after_library_update
+AFTER UPDATE ON Library
+FOR EACH ROW
+BEGIN
+	INSERT INTO Library_Audit (BookID, Title, Author, Price, Action_type, Action_Time)
+    VALUES (New.BookID, NEW.Title, NEW.Author, NEW.Price, 'AFTER UPDATE', NOW());
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER before_library_delete
+BEFORE DELETE ON Library
+FOR EACH ROW
+BEGIN
+	INSERT INTO Library_Audit (BookID, Title, Author, Price, Action_type, Action_Time)
+    VALUES (OLD.BookID, OLD.Title, OLD.Author, OLD.Price, 'BEFORE DELETE', NOW());
+END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER after_library_delete
+AFTER DELETE ON Library
+FOR EACH ROW
+BEGIN
+    INSERT INTO Library_Audit (BookID, Title, Author, Price, Action_Type, Action_Time)
+    VALUES (OLD.BookID, OLD.Title, OLD.Author, OLD.Price, 'AFTER DELETE', NOW());
+END $$
+DELIMITER ;
+
+INSERT INTO Library (BookID, Title, Author, Price) VALUES
+(101, 'DBMS Concepts', 'ABC', 500),
+(102, 'Operating Systems', 'DEF', 600),
+(103, 'Computer Networks', 'XYZ', 650);
+
+UPDATE Library
+SET Price = 800
+WHERE BookID = 101;
+
+DELETE FROM Library
+WHERE BookID = 103;
+
+SELECT * FROM Library_Audit;

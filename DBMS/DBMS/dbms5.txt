@@ -1,0 +1,94 @@
+CREATE DATABASE stdDB;
+USE stdDB;
+CREATE TABLE Stud_Marks (
+    Roll INT PRIMARY KEY,
+    Name VARCHAR(30),
+    Total_Marks INT
+);
+
+CREATE TABLE Result (
+    Roll INT,
+    Name VARCHAR(30),
+    Class VARCHAR(30)
+);
+
+INSERT INTO Stud_Marks VALUES
+(1, 'Aditi', 1450),
+(2, 'Mihika', 950),
+(3, 'Romita', 870),
+(4, 'Ansika', 820),
+(5, 'Mira', 780);
+
+DELIMITER $$
+CREATE PROCEDURE proc_Grade()
+BEGIN
+    DECLARE v_roll INT;
+    DECLARE v_name VARCHAR(30);
+    DECLARE v_marks INT;
+    DECLARE v_class VARCHAR(30);
+    DECLARE done INT DEFAULT 0;
+
+    -- Cursor to loop through all students
+    DECLARE cur CURSOR FOR SELECT Roll, Name, Total_Marks FROM Stud_Marks;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    OPEN cur;
+
+    read_loop: LOOP
+        FETCH cur INTO v_roll, v_name, v_marks;
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+
+        -- Classification logic
+        IF v_marks BETWEEN 990 AND 1500 THEN
+            SET v_class = 'Distinction';
+        ELSEIF v_marks BETWEEN 900 AND 989 THEN
+            SET v_class = 'First Class';
+        ELSEIF v_marks BETWEEN 825 AND 899 THEN
+            SET v_class = 'Higher Second Class';
+        ELSE
+            SET v_class = 'Fail';
+        END IF;
+
+        INSERT INTO Result VALUES (v_roll, v_name, v_class);
+    END LOOP;
+
+    CLOSE cur;
+END$$
+DELIMITER ;
+
+CALL proc_Grade();
+
+SELECT * FROM Result;
+
+DELIMITER $$
+CREATE FUNCTION fn_Grade(marks INT)
+RETURNS VARCHAR(30)
+DETERMINISTIC
+BEGIN
+    DECLARE grade VARCHAR(30);
+
+    IF marks BETWEEN 990 AND 1500 THEN
+        SET grade = 'Distinction';
+    ELSEIF marks BETWEEN 900 AND 989 THEN
+        SET grade = 'First Class';
+    ELSEIF marks BETWEEN 825 AND 899 THEN
+        SET grade = 'Higher Second Class';
+    ELSE
+        SET grade = 'Fail';
+    END IF;
+
+    RETURN grade;
+END$$
+DELIMITER ;
+
+SELECT Roll, Name, fn_Grade(Total_Marks) 
+AS Class FROM Stud_Marks;
+
+DELETE FROM Stud_Marks
+WHERE Roll = 4;
+
+UPDATE Stud_Marks
+SET Roll = 4
+WHERE Roll = 5;

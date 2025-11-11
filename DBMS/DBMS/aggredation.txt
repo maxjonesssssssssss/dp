@@ -1,0 +1,376 @@
+company> db.Employeeinfo.insertMany([{empid: 1, name: "Spongebob Squarepants", age: 30, salary: 800000, telephone: "8798098768", city: "Pune", state:"Maharashtra"},
+... {empid: 2, name: "Patrick Jones", age: 32, salary: 1000000, telephone: "7890876453", city: "Mumbai", state: "Maharashtra"}
+... , {empid: 3, name: "Lizzy Bennet", age: 28, salary: 1200000, telephone: "9090897867",city: "Delhi", state: "Delhi"},
+... {empid: 4, name: "Shinchan Nohara", age: 40, salary: 1000000, telephone: "9879087654", city: "Banglore", state: "Karnataka"},
+... {empid: 5, name: "Aditi Pawar", age: 20, salary: 2200000, telephone: "9890878976", city: "Hydrabad", state: "Telangana"}])
+{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('6912ee819a54e93b1263b114'),
+    '1': ObjectId('6912ee819a54e93b1263b115'),
+    '2': ObjectId('6912ee819a54e93b1263b116'),
+    '3': ObjectId('6912ee819a54e93b1263b117'),
+    '4': ObjectId('6912ee819a54e93b1263b118')
+  }
+}
+company> db.Employeeinfo.find()
+[
+  {
+    _id: ObjectId('6912ee819a54e93b1263b114'),
+    empid: 1,
+    name: 'Spongebob Squarepants',
+    age: 30,
+    salary: 800000,
+    telephone: '8798098768',
+    city: 'Pune',
+    state: 'Maharashtra'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b115'),
+    empid: 2,
+    name: 'Patrick Jones',
+    age: 32,
+    salary: 1000000,
+    telephone: '7890876453',
+    city: 'Mumbai',
+    state: 'Maharashtra'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b116'),
+    empid: 3,
+    name: 'Lizzy Bennet',
+    age: 28,
+    salary: 1200000,
+    telephone: '9090897867',
+    city: 'Delhi',
+    state: 'Delhi'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b117'),
+    empid: 4,
+    name: 'Shinchan Nohara',
+    age: 40,
+    salary: 1000000,
+    telephone: '9879087654',
+    city: 'Banglore',
+    state: 'Karnataka'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b118'),
+    empid: 5,
+    name: 'Aditi Pawar',
+    age: 20,
+    salary: 2200000,
+    telephone: '9890878976',
+    city: 'Hydrabad',
+    state: 'Telangana'
+  }
+]
+
+company> db.Employeeinfo.find({}, {empid:1, name: 1, _id:0})
+[
+  { empid: 1, name: 'Spongebob Squarepants' },
+  { empid: 2, name: 'Patrick Jones' },
+  { empid: 3, name: 'Mihika Jain' },
+  { empid: 4, name: 'Shinchan Nohara' },
+  { empid: 5, name: 'Aditi Pawar' },
+  { empid: 6, name: 'John Kamble' },
+  { empid: 7, name: 'Rosemary Sharma' },
+  { empid: 8, name: 'Ravi Raj' }
+]
+
+company> db.Employeeinfo.find({name: "Aditi Pawar"}).explain("executionStats")
+
+company> db.Employeeinfo.createIndex({dept: 1})
+dept_1
+company> db.Employeeinfo.getIndexes()
+[
+  { v: 2, key: { _id: 1 }, name: '_id_' },
+  { v: 2, key: { name: 1 }, name: 'name_1' },
+  { v: 2, key: { dept: 1 }, name: 'dept_1' }
+]
+company> db.Employeeinfo.dropIndex({dept: 1})
+{ nIndexesWas: 3, ok: 1 }
+company> db.Employeeinfo.getIndexes()
+[
+  { v: 2, key: { _id: 1 }, name: '_id_' },
+  { v: 2, key: { name: 1 }, name: 'name_1' }
+]
+company> db.Employeeinfo.find().sort({name: 1})
+[
+  {
+    _id: ObjectId('6912ee819a54e93b1263b118'),
+    empid: 5,
+    name: 'Aditi Pawar',
+    age: 20,
+    salary: 2200000,
+    telephone: '9890878976',
+    city: 'Pune',
+    state: 'Maharashtra',
+    dept: 'SDE'
+  },
+  {
+    _id: ObjectId('6912f4df9a54e93b1263b11a'),
+    empid: 6,
+    name: 'John Kamble',
+    age: 34,
+    salary: 1000000,
+    telephone: '8987654320',
+    city: 'Jaipur',
+    state: 'Rajasthan',
+    dept: 'SDE'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b116'),
+    empid: 3,
+    name: 'Mihika Jain',
+    age: 28,
+    salary: 1200000,
+    telephone: '9090897867',
+    city: 'Bhopal',
+    state: 'Madhya Pradesh',
+    dept: 'R&D'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b115'),
+    empid: 2,
+    name: 'Patrick Jones',
+    age: 32,
+    salary: 1000000,
+    telephone: '7890876453',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    dept: 'HR'
+  },
+  {
+    _id: ObjectId('6912f4df9a54e93b1263b11c'),
+    empid: 8,
+    name: 'Ravi Raj',
+    age: 27,
+    salary: 1400000,
+    telephone: '9875400300',
+    city: 'Lucknow',
+    state: 'Uttar Pradesh',
+    dept: 'IT'
+  },
+  {
+    _id: ObjectId('6912f4df9a54e93b1263b11b'),
+    empid: 7,
+    name: 'Rosemary Sharma',
+    age: 42,
+    salary: 1700000,
+    telephone: '9125364587',
+    city: 'Amritsar',
+    state: 'Punjab',
+    dept: 'SDE'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b117'),
+    empid: 4,
+    name: 'Shinchan Nohara',
+    age: 40,
+    salary: 1000000,
+    telephone: '9879087654',
+    city: 'Banglore',
+    state: 'Karnataka',
+    dept: 'IT'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b114'),
+    empid: 1,
+    name: 'Spongebob Squarepants',
+    age: 30,
+    salary: 800000,
+    telephone: [ '8976894576', '8291736453' ],
+    city: 'Pune',
+    state: 'Maharashtra',
+    dept: 'IT'
+  }
+]
+company> db.Employeeinfo.aggregate([{$sort: {name: 1}}])
+[
+  {
+    _id: ObjectId('6912ee819a54e93b1263b118'),
+    empid: 5,
+    name: 'Aditi Pawar',
+    age: 20,
+    salary: 2200000,
+    telephone: '9890878976',
+    city: 'Pune',
+    state: 'Maharashtra',
+    dept: 'SDE'
+  },
+  {
+    _id: ObjectId('6912f4df9a54e93b1263b11a'),
+    empid: 6,
+    name: 'John Kamble',
+    age: 34,
+    salary: 1000000,
+    telephone: '8987654320',
+    city: 'Jaipur',
+    state: 'Rajasthan',
+    dept: 'SDE'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b116'),
+    empid: 3,
+    name: 'Mihika Jain',
+    age: 28,
+    salary: 1200000,
+    telephone: '9090897867',
+    city: 'Bhopal',
+    state: 'Madhya Pradesh',
+    dept: 'R&D'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b115'),
+    empid: 2,
+    name: 'Patrick Jones',
+    age: 32,
+    salary: 1000000,
+    telephone: '7890876453',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    dept: 'HR'
+  },
+  {
+    _id: ObjectId('6912f4df9a54e93b1263b11c'),
+    empid: 8,
+    name: 'Ravi Raj',
+    age: 27,
+    salary: 1400000,
+    telephone: '9875400300',
+    city: 'Lucknow',
+    state: 'Uttar Pradesh',
+    dept: 'IT'
+  },
+  {
+    _id: ObjectId('6912f4df9a54e93b1263b11b'),
+    empid: 7,
+    name: 'Rosemary Sharma',
+    age: 42,
+    salary: 1700000,
+    telephone: '9125364587',
+    city: 'Amritsar',
+    state: 'Punjab',
+    dept: 'SDE'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b117'),
+    empid: 4,
+    name: 'Shinchan Nohara',
+    age: 40,
+    salary: 1000000,
+    telephone: '9879087654',
+    city: 'Banglore',
+    state: 'Karnataka',
+    dept: 'IT'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b114'),
+    empid: 1,
+    name: 'Spongebob Squarepants',
+    age: 30,
+    salary: 800000,
+    telephone: [ '8976894576', '8291736453' ],
+    city: 'Pune',
+    state: 'Maharashtra',
+    dept: 'IT'
+  }
+]
+company> db.Employeeinfo.aggregate([
+... {$match: {dept: "SDE"}},
+... {$group: {_id: "$dept", employees: {$push: "$name"}}}])
+[
+  {
+    _id: 'SDE',
+    employees: [ 'Aditi Pawar', 'John Kamble', 'Rosemary Sharma' ]
+  }
+]
+
+
+company> db.Employeeinfo.find({salary: {$gte: 1000000, $lte: 2000000}})
+[
+  {
+    _id: ObjectId('6912ee819a54e93b1263b115'),
+    empid: 2,
+    name: 'Patrick Jones',
+    age: 32,
+    salary: 1000000,
+    telephone: '7890876453',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    dept: 'HR'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b116'),
+    empid: 3,
+    name: 'Mihika Jain',
+    age: 28,
+    salary: 1200000,
+    telephone: '9090897867',
+    city: 'Bhopal',
+    state: 'Madhya Pradesh',
+    dept: 'R&D'
+  },
+  {
+    _id: ObjectId('6912ee819a54e93b1263b117'),
+    empid: 4,
+    name: 'Shinchan Nohara',
+    age: 40,
+    salary: 1000000,
+    telephone: '9879087654',
+    city: 'Banglore',
+    state: 'Karnataka',
+    dept: 'IT'
+  },
+  {
+    _id: ObjectId('6912f4df9a54e93b1263b11a'),
+    empid: 6,
+    name: 'John Kamble',
+    age: 34,
+    salary: 1000000,
+    telephone: '8987654320',
+    city: 'Jaipur',
+    state: 'Rajasthan',
+    dept: 'SDE'
+  },
+  {
+    _id: ObjectId('6912f4df9a54e93b1263b11b'),
+    empid: 7,
+    name: 'Rosemary Sharma',
+    age: 42,
+    salary: 1700000,
+    telephone: '9125364587',
+    city: 'Amritsar',
+    state: 'Punjab',
+    dept: 'SDE'
+  },
+  {
+    _id: ObjectId('6912f4df9a54e93b1263b11c'),
+    empid: 8,
+    name: 'Ravi Raj',
+    age: 27,
+    salary: 1400000,
+    telephone: '9875400300',
+    city: 'Lucknow',
+    state: 'Uttar Pradesh',
+    dept: 'IT'
+  }
+]
+
+company> db.Employeeinfo.aggregate([
+... {$group: {_id: null, MinSalary: {$min: "$salary"}, MaxSalary: {$max: "$salary"}}}])
+[ { _id: null, MinSalary: 800000, MaxSalary: 2200000 } ]
+
+company> db.Employeeinfo.find({}, {_id: 0, name: 1, salary: 1})
+[
+  { name: 'Spongebob Squarepants', salary: 800000 },
+  { name: 'Patrick Jones', salary: 1000000 },
+  { name: 'Mihika Jain', salary: 1200000 },
+  { name: 'Shinchan Nohara', salary: 1000000 },
+  { name: 'Aditi Pawar', salary: 2200000 },
+  { name: 'John Kamble', salary: 1000000 },
+  { name: 'Rosemary Sharma', salary: 1700000 },
+  { name: 'Ravi Raj', salary: 1400000 }
+]
