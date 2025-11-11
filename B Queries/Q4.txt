@@ -1,0 +1,132 @@
+CREATE TABLE department (
+  dept_name VARCHAR(12) PRIMARY KEY,
+  building VARCHAR(12),
+  budget INT
+);
+
+CREATE TABLE course (
+  course_id INT PRIMARY KEY,
+  title VARCHAR(30),
+  dept_name VARCHAR(20),
+  credits INT,
+  FOREIGN KEY (dept_name) REFERENCES department(dept_name)
+);
+
+CREATE TABLE instructor (
+  id INT PRIMARY KEY,
+  name VARCHAR(30),
+  dept_name VARCHAR(20),
+  salary INT,
+  FOREIGN KEY (dept_name) REFERENCES department(dept_name)
+);
+
+CREATE TABLE section (
+  course_id INT,
+  section_id INT PRIMARY KEY,
+  semester VARCHAR(10),
+  year INT,
+  building VARCHAR(20),
+  room_no INT,
+  time_slot VARCHAR(10),
+  FOREIGN KEY (course_id) REFERENCES course(course_id)
+);
+
+CREATE TABLE teaches (
+  id INT,
+  course_id INT,
+  section_id INT,
+  semester VARCHAR(10),
+  year INT,
+  FOREIGN KEY (id) REFERENCES instructor(id),
+  FOREIGN KEY (course_id) REFERENCES course(course_id),
+  FOREIGN KEY (section_id) REFERENCES section(section_id)
+);
+
+INSERT INTO department VALUES
+('Physics', 'North Wing', 900000),
+('Biology', 'East Wing', 850000),
+('Computer Science', 'West Wing', 1500000),
+('Geography', 'South Wing', 12000),
+('Music', 'Central', 18000);
+
+INSERT INTO course VALUES
+(1, 'Mechanics', 'Physics', 4),
+(2, 'Genetics', 'Biology', 5),
+(3, 'OOP', 'Computer Science', 5),
+(4, 'Map', 'Geography', 4),
+(5, 'Music Theory', 'Music', 3);
+
+INSERT INTO instructor VALUES
+(11111, 'Ananya', 'Physics', 95000),
+(12121, 'Rohan', 'Biology', 85000),
+(13131, 'Priya', 'Computer Science', 120000),
+(14141, 'Kavya', 'Geography', 110000),
+(15151, 'Sahil', 'Music', 18000);
+
+INSERT INTO section VALUES
+(1, 1, 'Winter', 2024, 'North Wing', 101, '1hr'),
+(2, 2, 'Summer', 2024, 'East Wing', 105, '1hr'),
+(3, 3, 'Winter', 2024, 'West Wing', 201, '1hr'),
+(4, 4, 'Summer', 2024, 'South Wing', 301, '1hr'),
+(5, 5, 'Summer', 2024, 'Central', 401, '1hr');
+
+INSERT INTO teaches VALUES
+(11111, 1, 1, 'Winter', 2024),
+(12121, 2, 2, 'Summer', 2024),
+(13131, 3, 3, 'Winter', 2024),
+(14141, 4, 4, 'Summer', 2024),
+(15151, 5, 5, 'Summer', 2024);
+
+inne join
+SELECT * 
+FROM course INNER JOIN section 
+ON course.course_id = section.section_id;
+
+left outer join
+SELECT * 
+FROM course LEFT OUTER JOIN section 
+ON course.course_id = section.section_id;
+
+right outer join
+SELECT * 
+FROM course RIGHT OUTER JOIN section 
+ON course.course_id = section.section_id;
+
+natural join
+SELECT * 
+FROM course NATURAL JOIN section;
+
+natural left outer join
+SELECT * 
+FROM course LEFT JOIN section USING(course_id);
+
+natural right outer join
+SELECT * 
+FROM course RIGHT JOIN section USING(course_id);
+
+CREATE VIEW instructor_teaching AS
+SELECT i.name AS instructor_name, 
+       c.title AS course_title,
+       t.section_id, t.semester, t.year
+FROM instructor i 
+JOIN teaches t ON i.id = t.id
+JOIN course c ON t.course_id = c.course_id;
+
+SELECT * 
+FROM instructor_teaching it 
+JOIN instructor i ON it.instructor_name = i.name 
+WHERE i.salary > (SELECT AVG(salary) FROM instructor);
+
+SELECT d.dept_name, c.credits
+FROM department d
+JOIN course c ON d.dept_name = c.dept_name
+ORDER BY d.budget DESC;
+
+SELECT dept_name, building, budget
+FROM department
+WHERE budget > (SELECT AVG(budget) FROM department);
+
+SELECT dept_name, COUNT(*) AS instructor_count
+FROM instructor
+GROUP BY dept_name;
+

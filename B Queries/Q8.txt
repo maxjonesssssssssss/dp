@@ -1,0 +1,76 @@
+CREATE DATABASE lib;
+USE lib;
+
+CREATE TABLE libdata (
+  book_id INT,
+  book_title VARCHAR(40),
+  writer VARCHAR(25),
+  allow_days INT
+);
+
+CREATE TABLE libdata_audit (
+  book_id INT,
+  old_days INT,
+  new_days INT,
+  action_type VARCHAR(20),
+  action_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO libdata VALUES
+(301, 'Alchemist', 'Paulo Coelho', 12),
+(302, 'The Fault in Our Stars', 'John Green', 14),
+(303, 'Me Before You', 'Jojo Moyes', 10),
+(304, 'Pride and Prejudice', 'Jane Austen', 9);
+
+BEFORE UPDATE Trigger
+DELIMITER $$
+CREATE TRIGGER before_update_lib
+BEFORE UPDATE ON libdata
+FOR EACH ROW
+BEGIN
+  INSERT INTO libdata_audit (book_id, old_days, new_days, action_type)
+  VALUES (OLD.book_id, OLD.allow_days, NEW.allow_days, 'BEFORE UPDATE');
+END$$
+DELIMITER ;
+
+AFTER UPDATE Trigger
+DELIMITER $$
+CREATE TRIGGER after_update_lib
+AFTER UPDATE ON libdata
+FOR EACH ROW
+BEGIN
+  INSERT INTO libdata_audit (book_id, old_days, new_days, action_type)
+  VALUES (NEW.book_id, OLD.allow_days, NEW.allow_days, 'AFTER UPDATE');
+END$$
+DELIMITER ;
+
+BEFORE DELETE Trigger
+DELIMITER $$
+CREATE TRIGGER before_delete_lib
+BEFORE DELETE ON libdata
+FOR EACH ROW
+BEGIN
+  INSERT INTO libdata_audit (book_id, old_days, new_days, action_type)
+  VALUES (OLD.book_id, OLD.allow_days, OLD.allow_days, 'BEFORE DELETE');
+END$$
+DELIMITER ;
+
+AFTER DELETE Trigger
+DELIMITER $$
+CREATE TRIGGER after_delete_lib
+AFTER DELETE ON libdata
+FOR EACH ROW
+BEGIN
+  INSERT INTO libdata_audit (book_id, old_days, new_days, action_type)
+  VALUES (OLD.book_id, OLD.allow_days, OLD.allow_days, 'AFTER DELETE');
+END$$
+DELIMITER ;
+
+UPDATE libdata SET allow_days = 15 WHERE book_id = 301;
+UPDATE libdata SET allow_days = 18 WHERE book_id = 303;
+
+
+DELETE FROM libdata WHERE book_id = 304;
+
+
+

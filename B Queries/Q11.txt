@@ -1,0 +1,41 @@
+use productDB
+
+db.products.insertMany([
+  { name: "Laptop", type: "Electronics", city: "Pune", cost: 55000 },
+  { name: "Mouse", type: "Computer Accessories", city: "Mumbai", cost: 1200 },
+  { name: "Keyboard", type: "Computer Accessories", city: "Delhi", cost: 1500 },
+  { name: "Tablet", type: "Electronics", city: "Bangalore", cost: 22000 },
+  { name: "Monitor", type: "Electronics", city: "Chennai", cost: 17000 },
+  { name: "Charger", type: "Mobile Accessories", city: "Hyderabad", cost: 900 },
+  { name: "Pendrive", type: "Computer Accessories", city: "Mumbai", cost: 800 },
+  { name: "SSD", type: "Computer Accessories", city: "Pune", cost: 3500 },
+  { name: "xyz", type: "Computer Accessories", city: "Delhi", cost: 1100 }
+]);
+
+db.products.find({}, { name: 1, _id: 0 })
+
+db.products.createIndex({ name: 1 })
+
+db.products.find({ name: "xyz" })
+
+db.products.createIndex({ city: 1 })
+
+db.products.getIndexes()
+
+db.products.dropIndex({ city: 1 })
+
+db.products.aggregate([{ $sort: { name: 1 } }])
+
+db.products.aggregate([
+  { $match: { city: "Mumbai" } },
+  { $group: { _id: { type: "$type", name: "$name" }, total: { $sum: 1 } } }
+])
+
+db.products.aggregate([
+  { $group: { _id: null, minCost: { $min: "$cost" }, maxCost: { $max: "$cost" } } }
+])
+
+db.products.find({ city: "Mumbai", type: "Computer Accessories" })
+
+db.products.find({}, { name: 1, city: 1, _id: 0 })
+

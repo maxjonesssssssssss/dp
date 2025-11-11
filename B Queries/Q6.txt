@@ -1,0 +1,98 @@
+CREATE DATABASE empdb;
+USE empdb;
+
+CREATE TABLE Employee(
+  Emp_no INT PRIMARY KEY,
+  Name VARCHAR(20),
+  Balance_leave INT
+);
+
+INSERT INTO Employee VALUES
+(101, 'Ananya', 15),
+(102, 'Priya', 10),
+(103, 'Rohan', 5),
+(104, 'Sahil', 20),
+(105, 'Kavya', 8);
+
+SET SERVEROUTPUT ON;
+
+CREATE OR REPLACE PROCEDURE Deduction_Cal(
+  p_empno IN NUMBER,
+  p_leave_date IN DATE
+)
+IS
+  v_days NUMBER;
+  v_balance NUMBER;
+  v_deduction NUMBER;
+BEGIN
+  -- Calculate number of leave days
+  v_days := TRUNC(SYSDATE - p_leave_date);
+
+  -- Fetch current balance leave
+  SELECT Balance_leave INTO v_balance
+  FROM Employee
+  WHERE Emp_no = p_empno;
+
+  -- Decision making using IF-ELSE
+  IF v_days <= v_balance THEN
+    UPDATE Employee
+    SET Balance_leave = Balance_leave - v_days
+    WHERE Emp_no = p_empno;
+    DBMS_OUTPUT.PUT_LINE('Leave approved. Updated Balance = ' || (v_balance - v_days));
+
+  ELSE
+    v_deduction := (v_days - v_balance) * 500;
+    UPDATE Employee
+    SET Balance_leave = 0
+    WHERE Emp_no = p_empno;
+    DBMS_OUTPUT.PUT_LINE('Leave exceeds balance. Deduction = Rs ' || v_deduction);
+  END IF;
+
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    DBMS_OUTPUT.PUT_LINE('Employee not found!');
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('Some error occurred: ' || SQLERRM);
+END;
+/
+
+
+EXEC Deduction_Cal(101, TO_DATE('01-JAN-2025', 'DD-MON-YYYY'));
+EXEC Deduction_Cal(103, TO_DATE('01-JAN-2025', 'DD-MON-YYYY'));
+
+************************************OR***************************************
+DELIMITER //
+CREATE PROCEDURE Deduction_Cal(
+  IN p_empno INT,
+  IN p_leave_date DATE
+)
+BEGIN
+  DECLARE v_days INT;
+  DECLARE v_balance INT;
+  DECLARE v_deduction INT;
+
+  -- Calculate leave days
+  SET v_days = DATEDIFF(CURDATE(), p_leave_date);
+
+  -- Check if employee exists
+  IF (SELECT COUNT(*) FROM Employee WHERE Emp_no = p_empno) = 0 THEN
+    SELECT 'Employee not found!' AS Message;
+  ELSE
+    SELECT Balance_leave INTO v_balance FROM Employee WHERE Emp_no = p_empno;
+
+    IF v_days <= v_balance THEN
+      UPDATE Employee
+      SET Balance_leave = Balance_leave - v_days
+      WHERE Emp_no = p_empno;
+      SELECT CONCAT('Leave approved. Updated Balance = ', (v_balance - v_days)) AS Message;
+
+    ELSE
+      SET v_deduction = (v_days - v_balance) * 500;
+      UPDATE Employee SET Balance_leave = 0 WHERE Emp_no = p_empno;
+      SELECT CONCAT('Leave exceeds balance. Deduction = Rs ', v_deduction) AS Message;
+    END IF;
+  END IF;
+END //
+DELIMITER ;
+
+CALL Deduction_Cal(101, '2025-01-01');

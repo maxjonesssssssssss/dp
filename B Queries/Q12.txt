@@ -1,0 +1,26 @@
+use company
+
+db.orders.insertMany([
+  { Product_id: 1, Item: "Laptop", Quantity: 5 },
+  { Product_id: 2, Item: "Mouse", Quantity: 10 },
+  { Product_id: 3, Item: "Keyboard", Quantity: 7 },
+  { Product_id: 4, Item: "Monitor", Quantity: 4 },
+  { Product_id: 5, Item: "Laptop", Quantity: 3 },
+  { Product_id: 6, Item: "Mouse", Quantity: 6 }
+])
+
+var mapFunction = function() {
+  emit(this.Item, this.Quantity);
+};
+
+var reduceFunction = function(item, quantities) {
+  return Array.sum(quantities);
+};
+
+db.orders.mapReduce(
+  mapFunction,
+  reduceFunction,
+  { out: "total_quantity_by_item" }
+);
+
+db.total_quantity_by_item.find().pretty();

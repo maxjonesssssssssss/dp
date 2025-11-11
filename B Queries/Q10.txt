@@ -1,0 +1,36 @@
+use companyDB
+
+show dbs
+
+
+db.productinfo.insertMany([
+  {ID:1, ProductName:"SmartPhone", Price:15000, City:"Pune", ProductSpecification:{color:"Black", storage:"128GB"}},
+  {ID:2, ProductName:"Speaker", Price:2000, City:"Pune", ProductSpecification:{color:"Transparent", watt:20}},
+  {ID:3, ProductName:"Bottle", Price:200, City:"Mumbai", ProductSpecification:{color:"Silver", material:"Steel"}},
+  {ID:4, ProductName:"Shampoo", Price:1200, City:"Delhi", ProductSpecification:{size:"500ml", type:"Herbal"}},
+  {ID:5, ProductName:"Shoes", Price:25000, City:"Pune", ProductSpecification:{size:9, brand:"Nike"}},
+  {ID:6, ProductName:"MicrowaveOven", Price:1800, City:"Bengaluru", ProductSpecification:{power:"750W"}}
+])
+
+
+db.productinfo.find().pretty()
+
+db.productinfo.find({City:"Pune"}).pretty()
+
+db.productinfo.updateOne({ID:1}, { $set: { Price:20000 } })
+
+db.productinfo.updateOne(
+  {ID:2},
+  {$set:{ProductSpecification:["Transparent","20W","Bluetooth 5.0"]}}
+)
+
+db.productinfo.find({ ProductName: { $regex: /^S/i } })
+
+db.productinfo.updateOne({ID:5}, {$set:{ProductName:"Running Shoes"}})
+
+db.productinfo.updateOne(
+  {ID:3},
+  {$unset:{ProductSpecification:""}}
+)
+
+db.productinfo.deleteOne({ProductName:"Bottle"})

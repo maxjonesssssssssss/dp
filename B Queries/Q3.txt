@@ -1,0 +1,45 @@
+CREATE TABLE department(
+  dept_name VARCHAR(20) PRIMARY KEY,
+  building  VARCHAR(20),
+  budget    INT
+);
+
+CREATE TABLE course(
+  course_id  INT PRIMARY KEY,
+  title      VARCHAR(30),
+  dept_name  VARCHAR(20),
+  credits    INT,
+  FOREIGN KEY (dept_name) REFERENCES department(dept_name)
+);
+
+CREATE TABLE instructor(
+  id         INT PRIMARY KEY,
+  name       VARCHAR(30),
+  dept_name  VARCHAR(20),
+  salary     INT,
+  FOREIGN KEY (dept_name) REFERENCES department(dept_name)
+);
+
+CREATE INDEX idx_id ON instructor(id);
+
+CREATE INDEX idx_dept ON instructor(dept_name);
+
+SHOW INDEX FROM instructor;
+
+DROP INDEX idx_dept ON instructor;
+
+CREATE VIEW v1 AS
+SELECT * FROM instructor WHERE dept_name = 'CSE';
+
+SELECT * FROM v1;
+
+CREATE VIEW course_dept AS
+SELECT c.course_id, c.dept_name,
+       (SELECT d.building
+        FROM department d
+        WHERE d.dept_name = c.dept_name) AS building
+FROM course c;
+
+SELECT * FROM course_dept;
+
+

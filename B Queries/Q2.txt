@@ -1,0 +1,157 @@
+CREATE DATABASE mydb;
+USE mydb;
+
+CREATE TABLE department (
+  dept_name VARCHAR(12) PRIMARY KEY,
+  building VARCHAR(12),
+  budget INT
+);
+
+CREATE TABLE course (
+  course_id INT PRIMARY KEY,
+  title VARCHAR(30),
+  dept_name VARCHAR(20),
+  credits INT,
+  FOREIGN KEY (dept_name) REFERENCES department(dept_name)
+);
+
+CREATE TABLE instructor (
+  id INT PRIMARY KEY,
+  name VARCHAR(30),
+  dept_name VARCHAR(20),
+  salary INT,
+  FOREIGN KEY (dept_name) REFERENCES department(dept_name)
+);
+
+CREATE TABLE section (
+  course_id INT,
+  section_id INT PRIMARY KEY,
+  semester VARCHAR(10),
+  year INT,
+  building VARCHAR(20),
+  room_no INT,
+  time_slot VARCHAR(10),
+  FOREIGN KEY (course_id) REFERENCES course(course_id)
+);
+
+CREATE TABLE teaches (
+  id INT,
+  course_id INT,
+  section_id INT,
+  semester VARCHAR(10),
+  year INT,
+  FOREIGN KEY (id) REFERENCES instructor(id),
+  FOREIGN KEY (course_id) REFERENCES course(course_id),
+  FOREIGN KEY (section_id) REFERENCES section(section_id)
+);
+
+INSERT INTO department VALUES
+('Physics', 'North Wing', 900000),
+('Biology', 'East Wing', 850000),
+('Computer Science', 'West Wing', 1500000),
+('Geography', 'South Wing', 12000),
+('Music', 'Central', 18000);
+
+INSERT INTO course VALUES
+(1, 'Mechanics', 'Physics', 4),
+(2, 'Genetics', 'Biology', 5),
+(3, 'OOP', 'Computer Science', 5),
+(4, 'Map', 'Geography', 4),
+(5, 'Music Theory', 'Music', 3);
+
+INSERT INTO instructor VALUES
+(11111, 'Ananya', 'Physics', 95000),
+(12121, 'Rohan', 'Biology', 85000),
+(13131, 'Priya', 'Computer Science', 120000),
+(14141, 'Kavya', 'Geography', 110000),
+(15151, 'Sahil', 'Music', 18000);
+
+INSERT INTO section VALUES
+(1, 1, 'Winter', 2024, 'North Wing', 101, '1hr'),
+(2, 2, 'Summer', 2024, 'East Wing', 105, '1hr'),
+(3, 3, 'Winter', 2024, 'West Wing', 201, '1hr'),
+(4, 4, 'Summer', 2024, 'South Wing', 301, '1hr'),
+(5, 5, 'Summer', 2024, 'Central', 401, '1hr');
+
+INSERT INTO teaches VALUES
+(11111, 1, 1, 'Winter', 2024),
+(12121, 2, 2, 'Summer', 2024),
+(13131, 3, 3, 'Winter', 2024),
+(14141, 4, 4, 'Summer', 2024),
+(15151, 5, 5, 'Summer', 2024);
+
+1
+	SELECT name FROM instructor 
+	WHERE dept_name = 'Physics' 
+	ORDER BY name ASC;
+2
+	SELECT * FROM instructor 
+	ORDER BY salary DESC;
+3
+	SELECT name FROM instructor 
+	WHERE salary BETWEEN 90000 AND 100000;
+4
+	SELECT i.name, c.title
+	FROM instructor i
+	JOIN teaches t ON i.id = t.id
+	JOIN course c ON t.course_id = c.course_id
+	WHERE i.dept_name = 'Biology';
+5
+	SELECT DISTINCT course_id FROM section 
+	WHERE semester = 'Summer'
+	UNION
+	SELECT DISTINCT course_id FROM section 
+	WHERE semester = 'Winter';
+6
+	SELECT AVG(salary) AS avg_salary 
+	FROM instructor 
+	WHERE dept_name = 'Computer Science';
+7
+	SELECT COUNT(DISTINCT id) AS total_instructors
+	FROM teaches 
+	WHERE semester = 'Winter';
+8
+	SELECT AVG(salary) AS overall_avg_salary 
+	FROM instructor;
+9
+	INSERT INTO department VALUES 
+	('Geology', 'South Wing', 12000);
+10
+	INSERT INTO instructor VALUES 
+	(106, 'Neel', 'Music', 18000);
+11
+	ALTER TABLE instructor ADD joining_date DATE;
+12
+	UPDATE instructor SET joining_date = '2023-06-01' WHERE id = 12121;
+13
+	ALTER TABLE instructor DROP COLUMN joining_date;
+14
+	UPDATE instructor 
+	SET salary = salary * 1.05;
+15
+	UPDATE instructor 
+	SET salary = CASE 
+  		WHEN salary > 1000000 THEN salary * 1.05
+  		ELSE salary * 1.03
+	END;
+16
+	DELETE FROM instructor WHERE id = 15151;
+17
+	UPDATE instructor SET name = 'Anjali' WHERE id = 11111;
+18
+	SELECT name, salary
+	FROM instructor
+	WHERE salary = (SELECT MAX(salary) FROM instructor);
+
+19
+	DELETE FROM section;
+20
+	SELECT name FROM instructor 
+	WHERE salary < (SELECT AVG(salary) FROM instructor);
+21
+	SELECT MAX(salary) AS MaxSalary, MIN(salary) AS MinSalary 
+	FROM instructor;
+
+	
+
+	

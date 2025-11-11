@@ -1,0 +1,78 @@
+CREATE DATABASE emp;
+USE emp;
+
+CREATE TABLE EmpInfo(
+    Id INT PRIMARY KEY,
+    Name VARCHAR(20),
+    Salary INT,
+    Marks INT
+);
+
+CREATE TABLE EmpGrade(
+    Id INT,
+    Name VARCHAR(20),
+    Grade VARCHAR(5)
+);
+
+INSERT INTO EmpInfo VALUES
+(1, 'Ananya', 25000, 16000),
+(2, 'Priya', 40000, 14000),
+(3, 'Rohan', 60000, 52000),
+(4, 'Sahil', 90000, 30000),
+(5, 'Kavya', 28000, 10000);
+
+STORED PROCEURE
+DELIMITER //
+CREATE PROCEDURE proc_Grade()
+BEGIN
+  DECLARE done INT DEFAULT 0;
+  DECLARE eid INT;
+  DECLARE ename VARCHAR(20);
+  DECLARE esal INT;
+  DECLARE emarks INT;
+  DECLARE egrade VARCHAR(5);
+  DECLARE cur CURSOR FOR SELECT Id, Name, Salary, Marks FROM EmpInfo;
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+  
+  OPEN cur;
+  REPEAT
+    FETCH cur INTO eid, ename, esal, emarks;
+    IF NOT done THEN
+      IF esal < 30000 AND emarks >= 15000 THEN
+        SET egrade = 'P4';
+      ELSEIF esal BETWEEN 30000 AND 50000 THEN
+        SET egrade = 'P3';
+      ELSEIF esal < 80000 AND emarks >= 50000 THEN
+        SET egrade = 'P2';
+      ELSEIF esal >= 80000 THEN
+        SET egrade = 'P1';
+      ELSE
+        SET egrade = 'NA';
+      END IF;
+      INSERT INTO EmpGrade VALUES (eid, ename, egrade);
+    END IF;
+  UNTIL done END REPEAT;
+  CLOSE cur;
+END //
+DELIMITER ;
+
+CALL proc_Grade();
+SELECT * FROM EmpGrade;
+
+STORED FUNCTION
+DELIMITER $$
+CREATE FUNCTION getEmpGrade(emp_id INT)
+RETURNS VARCHAR(10)
+READS SQL DATA
+BEGIN
+    DECLARE empGrade VARCHAR(10);
+    SELECT Grade INTO empGrade
+    FROM EmpGrade
+    WHERE Id = emp_id;
+    RETURN empGrade;
+END $$
+DELIMITER ;
+
+SELECT getEmpGrade(2);
+
+

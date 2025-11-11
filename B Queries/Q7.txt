@@ -1,0 +1,54 @@
+CREATE DATABASE student1;
+USE student1;
+
+CREATE TABLE RollNumber (
+  RollNo INT PRIMARY KEY,
+  Name VARCHAR(10),
+  Marks INT,
+  Result VARCHAR(10)
+);
+
+INSERT INTO RollNumber VALUES
+(3201, 'Aditi', 78, 'Pass'),
+(3221, 'Mihika', 70, 'Pass'),
+(3234, 'Nupur', 69, 'Pass'),
+(3240, 'Vaidehi', 20, 'Fail');
+
+DELIMITER $$
+CREATE PROCEDURE ShowPassedStudents()
+BEGIN
+  DECLARE v_RollNo INT;
+  DECLARE v_Name VARCHAR(10);
+  DECLARE v_Marks INT;
+  DECLARE v_Result VARCHAR(10);
+  DECLARE done INT DEFAULT 0;
+
+  -- Declare cursor to fetch records of students who passed
+  DECLARE pass_cursor CURSOR FOR
+    SELECT RollNo, Name, Marks, Result
+    FROM RollNumber
+    WHERE Result = 'Pass';
+
+  -- Declare handler for end of data
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+  -- Open cursor
+  OPEN pass_cursor;
+
+  -- Loop through cursor records
+  read_loop: LOOP
+    FETCH pass_cursor INTO v_RollNo, v_Name, v_Marks, v_Result;
+    IF done THEN
+      LEAVE read_loop;
+    END IF;
+
+    -- Display record
+    SELECT v_RollNo AS RollNum, v_Name AS StudentName, v_Marks AS Marks, v_Result AS Result;
+  END LOOP;
+
+  -- Close cursor
+  CLOSE pass_cursor;
+END $$
+DELIMITER ;
+
+CALL ShowPassedStudents();
