@@ -1,0 +1,126 @@
+INPUT
+
+import java.util.Scanner;
+
+public class prioritys 
+{
+    public static void main(String args[]) 
+    {
+        Scanner sc = new Scanner(System.in);
+        
+        System.out.print("Enter the number of processes: ");
+        int n = sc.nextInt();
+
+        int[] processIDs = new int[n];
+        int[] arrivalTimes = new int[n];
+        int[] priorities = new int[n];
+        int[] burstTimes = new int[n];
+        int[] waitTimes = new int[n];
+        int[] turnaroundTimes = new int[n];
+        boolean[] isCompleted = new boolean[n];
+
+        System.out.println("\nEnter arrival time, burst time, and priority for each process:");
+        for (int i = 0; i < n; i++) 
+        {
+            System.out.print("Process[" + (i + 1) + "] - Arrival Time, Burst Time, Priority: ");
+            arrivalTimes[i] = sc.nextInt(); 
+            burstTimes[i] = sc.nextInt(); 
+            priorities[i] = sc.nextInt(); 
+            processIDs[i] = i + 1;          
+        }
+
+        int currentTime = 0;
+        int completed = 0;
+        int totalWaitTime = 0;
+        int totalTurnaroundTime = 0;
+	//main processing code
+        while (completed < n) 
+        {
+            int idx = -1;
+            int highestPriority = Integer.MAX_VALUE;
+            
+            for (int i = 0; i < n; i++) 
+            {
+                if (arrivalTimes[i] <= currentTime && !isCompleted[i]) 
+                {
+                    if (priorities[i] < highestPriority || (priorities[i] == highestPriority && arrivalTimes[i] < arrivalTimes[idx])) 
+                    {
+                        highestPriority = priorities[i];
+                        idx = i;
+                    }
+                }
+            }
+
+            if (idx != -1) 
+            {
+                waitTimes[idx] = currentTime - arrivalTimes[idx];
+                turnaroundTimes[idx] = waitTimes[idx] + burstTimes[idx];
+                
+                currentTime += burstTimes[idx];
+                isCompleted[idx] = true;
+                completed++;
+                
+                totalWaitTime += waitTimes[idx];
+                totalTurnaroundTime += turnaroundTimes[idx];
+            } 
+            else 
+            {
+                currentTime++;
+            }
+        }
+
+        System.out.println("\nProcess\tArrival Time\tBurst Time\tWait Time\tTurnaround Time\tPriority");
+        for (int i = 0; i < n; i++) 
+        {
+            System.out.printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t%d\n",
+                              processIDs[i], arrivalTimes[i], burstTimes[i], waitTimes[i], turnaroundTimes[i], priorities[i]);
+                              
+       
+        }
+
+        // Calculate and display average wait time and average turnaround time
+        double avgWaitTime = (double) totalWaitTime / n;
+        double avgTurnaroundTime = (double) totalTurnaroundTime / n;
+
+        System.out.printf("\nAverage Wait Time: %.2f", avgWaitTime);
+        System.out.printf("\nAverage Turnaround Time: %.2f\n", avgTurnaroundTime);
+
+        sc.close();
+    }
+}
+
+OUTPUT
+bvcoew@bvcoew-ThinkCentre-M72e:~$ javac prioritys.java
+bvcoew@bvcoew-ThinkCentre-M72e:~$ java prioritys
+Enter the number of processes: 5
+
+Enter arrival time, burst time, and priority for each process:
+Process[1] - Arrival Time, Burst Time, Priority: 0
+10
+1
+Process[2] - Arrival Time, Burst Time, Priority: 3
+15
+0
+Process[3] - Arrival Time, Burst Time, Priority: 2
+6
+4
+Process[4] - Arrival Time, Burst Time, Priority: 6
+2
+2
+Process[5] - Arrival Time, Burst Time, Priority: 10
+24
+3
+
+Process	Arrival Time	Burst Time	Wait Time	Turnaround Time	Priority
+1		0		10		0		10		1
+2		3		15		7		22		0
+3		2		6		49		55		4
+4		6		2		19		21		2
+5		10		24		17		41		3
+
+Average Wait Time: 18.40
+Average Turnaround Time: 29.80
+bvcoew@bvcoew-ThinkCentre-M72e:~$ 
+
+
+

@@ -1,0 +1,97 @@
+INPUT --
+
+import java.util.*;
+
+public class LRUPageReplacement
+{
+    public static void main(String[] args)
+    {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of frames: ");
+        int framesCount = sc.nextInt();
+
+        System.out.print("Enter number of pages: ");
+        int pagesCount = sc.nextInt();
+
+        int[] pages = new int[pagesCount];
+        System.out.println("Enter the reference string (page numbers):");
+        for (int i = 0; i < pagesCount; i++)
+        {
+            pages[i] = sc.nextInt();
+        }
+
+        ArrayList<Integer> frames = new ArrayList<>(framesCount);
+        int pageFaults = 0;
+
+        System.out.println("\nPage\tFrames");
+        System.out.println("--------------------");
+
+        for (int i = 0; i < pagesCount; i++)
+        {
+            int page = pages[i];
+
+            // If page is not present in frames
+            if (!frames.contains(page))
+            {
+                // If frames are full, remove the least recently used page
+                if (frames.size() == framesCount)
+                {
+                    // Remove the first page (least recently used)
+                    frames.remove(0);
+                }
+
+                // Add the new page
+                frames.add(page);
+                pageFaults++;
+            }
+            else
+            {
+                // If page is already in frames, move it to the most recent position
+                frames.remove((Integer) page);
+                frames.add(page);
+            }
+
+            // Print the current frame content
+            System.out.print(page + "\t");
+            printFrames(frames, framesCount);
+        }
+
+        System.out.println("\nTotal Page Faults: " + pageFaults);
+    }
+
+    // Helper method to print frames
+    static void printFrames(ArrayList<Integer> frames, int frameCount)
+    {
+        for (int i = 0; i < frameCount; i++)
+        {
+            if (i < frames.size())
+                System.out.print(frames.get(i) + " ");
+            else
+                System.out.print("- ");
+        }
+        System.out.println();
+    }
+}
+
+OUTPUT --
+
+Enter number of frames: 3
+Enter number of pages: 7
+Enter the reference string (page numbers):
+1 2 3 2 4 1 5
+
+Page    Frames
+--------------------
+1       1 - -
+2       1 2 -
+3       1 2 3
+2       1 3 2
+4       3 2 4
+1       2 4 1
+5       4 1 5
+
+Total Page Faults: 6
+
+Program finished execution.
+Press any key to continue . . .
