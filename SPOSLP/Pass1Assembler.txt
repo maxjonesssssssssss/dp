@@ -1,0 +1,469 @@
+
+import java.io.*;
+import java.util.*;
+
+/**
+ * Pass-1 Assembler (SS style)
+ * - Generates Intermediate Code with LC
+ * - Builds Symbol Table with symbolic names (S1, S2, S3, ...)
+ * - Builds Literal Table and Pool Table
+ *
+ * Input file: input.txt
+ */
+public class Pass1Assembler
+{
+    // ----- Tables -----
+    static final LinkedHashMap<String, String> OPTAB = new LinkedHashMap<>();
+    static final LinkedHashMap<String, String> REGTAB = new LinkedHashMap<>();
+    static final LinkedHashMap<String, String> CCTAB  = new LinkedHashMap<>();
+
+    static
+    {
+        // Imperative statements
+        OPTAB.put("STOP",  "IS,00");
+        OPTAB.put("ADD",   "IS,01");
+        OPTAB.put("SUB",   "IS,02");
+        OPTAB.put("MULT",  "IS,03");
+        OPTAB.put("MOVER", "IS,04");
+        OPTAB.put("MOVEM", "IS,05");
+        OPTAB.put("COMP",  "IS,06");
+        OPTAB.put("BC",    "IS,07");
+        OPTAB.put("DIV",   "IS,08");
+        OPTAB.put("READ",  "IS,09");
+        OPTAB.put("PRINT", "IS,10");
+        OPTAB.put("MUL",   "IS,03");
+        OPTAB.put("JUMP",  "IS,11");
+
+        // Assembler directives
+        OPTAB.put("START",  "AD,01");
+        OPTAB.put("END",    "AD,02");
+        OPTAB.put("ORIGIN", "AD,03");
+        OPTAB.put("EQU",    "AD,04");
+        OPTAB.put("LTORG",  "AD,05");
+
+        // Declaratives
+        OPTAB.put("DC",     "DL,01");
+        OPTAB.put("DS",     "DL,02");
+
+        // Registers
+        REGTAB.put("AREG", "01");
+        REGTAB.put("BREG", "02");
+        REGTAB.put("CREG", "03");
+        REGTAB.put("DREG", "04");
+
+        // Condition codes (for BC)
+        CCTAB.put("LT", "01");
+        CCTAB.put("LE", "02");
+        CCTAB.put("EQ", "03");
+        CCTAB.put("GT", "04");
+        CCTAB.put("GE", "05");
+        CCTAB.put("NE", "06");
+        CCTAB.put("ANY","07");
+    }
+
+    // ----- Assembler Data -----
+    static final LinkedHashMap<String,Integer> SYMTAB = new LinkedHashMap<>();
+    static final LinkedHashMap<String,String> SYMNAME = new LinkedHashMap<>();
+    static int symCounter = 0;
+
+    static final LinkedHashMap<String,Integer> LITADDR = new LinkedHashMap<>();
+    static final ArrayList<String> LITS = new ArrayList<>();
+    static final ArrayList<Integer> POOLTAB = new ArrayList<>();
+
+    static int nextLitPtr = 0;
+    static final ArrayList<String> IC = new ArrayList<>();
+    static int LC = 0;
+
+    public static void main(String[] args) throws Exception
+    {
+        try (BufferedReader br = new BufferedReader(new FileReader("input.txt")))
+        {
+            String line;
+            while ((line = br.readLine()) != null)
+            {
+                String raw = stripComment(line).trim();
+                if (raw.isEmpty()) continue;
+
+                Parsed p = parse(raw);
+
+                if (p.label != null && !p.isDeclarative())
+                    defineSymbol(p.label, LC);
+
+                String op = p.opcode;
+                if (op == null) continue;
+
+                switch (op)
+                {
+                    case "START":
+                        int start = eval(p.ops.isEmpty() ? "0" : p.ops.get(0));
+                        LC = start;
+                        IC.add(String.format("%-6s (%s) (C,%d)", "", OPTAB.get(op), start));
+                        break;
+
+                    case "END":
+                        closeLiteralPool();
+                        IC.add(String.format("%-6d (%s)", LC, OPTAB.get(op)));
+                        break;
+
+                    case "LTORG":
+                        IC.add(String.format("%-6d (%s)", LC, OPTAB.get(op)));
+                        closeLiteralPool();
+                        break;
+
+                    case "ORIGIN":
+                        int newLC = eval(p.ops.get(0));
+                        IC.add(String.format("%-6s (%s) (C,%d)", "", OPTAB.get(op), newLC));
+                        LC = newLC;
+                        break;
+
+                    case "EQU":
+                        if (p.label != null)
+                        {
+                            int val = eval(p.ops.get(0));
+                            defineSymbol(p.label, val);
+                            IC.add(String.format("%-6s (%s) (C,%d)", "", OPTAB.get(op), val));
+                        }
+                        break;
+
+                    case "DS":
+                        if (p.label != null) defineSymbol(p.label, LC);
+                        int n = eval(p.ops.get(0));
+                        IC.add(String.format("%-6d (%s) (C,%d)", LC, OPTAB.get(op), n));
+                        LC += n;
+                        break;
+
+                    case "DC":
+                        if (p.label != null) defineSymbol(p.label, LC);
+                        int c = eval(p.ops.get(0));
+                        IC.add(String.format("%-6d (%s) (C,%d)", LC, OPTAB.get(op), c));
+                        LC += 1;
+                        break;
+
+                    default:
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(String.format("%-6d (%s)", LC, OPTAB.get(op)));
+                        for (String operand : p.ops)
+                        {
+                            String enc = encodeOperand(operand);
+                            if (!enc.isEmpty()) sb.append(" ").append(enc);
+                        }
+                        IC.add(sb.toString());
+                        LC += 1;
+                }
+
+                if (op.equals("END")) break;
+            }
+        }
+
+        printIC();
+        printSYMTAB();
+        printLITTAB();
+        printPOOLTAB();
+    }
+
+    // ---------- Symbol Handling ----------
+    static void defineSymbol(String sym, int addr)
+    {
+        sym = sym.replaceAll("[,:]", "").trim().toUpperCase();
+        if (sym.isEmpty() || OPTAB.containsKey(sym)) return;
+        if (!SYMTAB.containsKey(sym))
+        {
+            SYMTAB.put(sym, addr);
+            symCounter++;
+            SYMNAME.put(sym, "S" + symCounter);
+        }
+        else
+        {
+            SYMTAB.put(sym, addr);
+        }
+    }
+
+    static String encodeOperand(String raw)
+	{
+		if (raw == null) return "";
+		String op = raw.trim().toUpperCase();
+
+		// 1️⃣ If it's a register → do NOT put in SYMTAB
+		if (REGTAB.containsKey(op)) return "(RG," + REGTAB.get(op) + ")";
+
+		// 2️⃣ If it's a condition code → do NOT put in SYMTAB
+		if (CCTAB.containsKey(op)) return "(CC," + CCTAB.get(op) + ")";
+
+		// 3️⃣ If it's a literal
+		if (op.startsWith("="))
+		{
+			String lit = normalizeLiteral(op);
+			if (!LITADDR.containsKey(lit))
+			{
+				LITADDR.put(lit, null);
+				LITS.add(lit);
+			}
+			int idx = literalIndex(lit);
+			return "(L,L" + idx + ")";
+		}
+
+		// 4️⃣ If it's a constant number
+		if (isNumber(op)) return "(C," + op + ")";
+
+		// 5️⃣ Otherwise, it's a symbol
+		String sym = op.replaceAll("[,:]", "").trim();
+		if (!SYMTAB.containsKey(sym))
+		{
+			SYMTAB.put(sym, -1);
+			symCounter++;
+			SYMNAME.put(sym, "S" + symCounter);
+		}
+		return "(S," + SYMNAME.get(sym) + ")";
+	}
+
+
+    static void closeLiteralPool()
+    {
+        if (nextLitPtr >= LITS.size()) return;
+        POOLTAB.add(nextLitPtr + 1);
+
+        while (nextLitPtr < LITS.size())
+        {
+            String lit = LITS.get(nextLitPtr);
+            if (LITADDR.get(lit) == null)
+            {
+                LITADDR.put(lit, LC);
+                String val = literalValue(lit);
+                IC.add(String.format("%-6d (DL,01) (C,%s)", LC, val));
+                LC++;
+            }
+            nextLitPtr++;
+        }
+    }
+
+    // ---------- Parsing ----------
+    static class Parsed
+    {
+        String label;
+        String opcode;
+        List<String> ops = new ArrayList<>();
+
+        boolean isDeclarative()
+        {
+            return "DS".equals(opcode) || "DC".equals(opcode) || "EQU".equals(opcode);
+        }
+    }
+
+    static Parsed parse(String raw)
+    {
+        Parsed p = new Parsed();
+        String[] t = raw.trim().split("\\s+");
+        if (t.length == 0) return p;
+
+        if (t[0].endsWith(":"))
+        {
+            p.label = t[0].substring(0, t[0].length() - 1);
+            if (t.length >= 2)
+            {
+                p.opcode = t[1].toUpperCase();
+                p.ops = splitOperands(join(t, 2));
+            }
+            return p;
+        }
+
+        if (t.length >= 2)
+        {
+            String maybeLabel = t[0].toUpperCase();
+            String maybeOp = t[1].toUpperCase();
+
+            if ((OPTAB.containsKey(maybeOp) && !OPTAB.containsKey(maybeLabel))
+                    || ("DS".equals(maybeOp) || "DC".equals(maybeOp) || "EQU".equals(maybeOp)))
+            {
+                p.label = t[0];
+                p.opcode = maybeOp;
+                p.ops = splitOperands(join(t, 2));
+                return p;
+            }
+        }
+
+        p.opcode = t[0].toUpperCase();
+        p.ops = splitOperands(join(t, 1));
+        return p;
+    }
+
+    // ---------- Utilities ----------
+    static String stripComment(String s)
+    {
+        int i = s.indexOf(';');
+        if (i >= 0) return s.substring(0, i);
+        i = s.indexOf("//");
+        if (i >= 0) return s.substring(0, i);
+        return s;
+    }
+
+    static String join(String[] arr, int from)
+    {
+        if (from >= arr.length) return "";
+        return String.join(" ", Arrays.copyOfRange(arr, from, arr.length));
+    }
+
+    static List<String> splitOperands(String s)
+    {
+        ArrayList<String> out = new ArrayList<>();
+        if (s == null || s.trim().isEmpty()) return out;
+        for (String part : s.split(","))
+        {
+            String tok = part.trim();
+            if (!tok.isEmpty()) out.add(tok);
+        }
+        return out;
+    }
+
+    static boolean isNumber(String s)
+    {
+        try { Integer.parseInt(s); return true; }
+        catch (Exception e) { return false; }
+    }
+
+    static String normalizeLiteral(String s)
+    {
+        String v = s.trim();
+        if (!v.startsWith("=")) return v;
+        v = v.substring(1).trim();
+        v = v.replaceAll("[\"'’‘`]", "");
+        return "='" + v + "'";
+    }
+
+    static String literalValue(String lit)
+    {
+        if (lit.startsWith("='") && lit.endsWith("'"))
+            return lit.substring(2, lit.length() - 1);
+        return lit.replace("=", "").replace("'", "").replace("\"", "");
+    }
+
+    static int eval(String expr)
+    {
+        if (expr == null || expr.isEmpty()) return 0;
+        String e = expr.trim().toUpperCase().replaceAll("\\s+", "");
+        if (isNumber(e)) return Integer.parseInt(e);
+        if (e.startsWith("=")) return Integer.parseInt(literalValue(normalizeLiteral(e)));
+
+        int plus = e.indexOf('+');
+        int minus = e.lastIndexOf('-');
+
+        if (plus > 0)
+        {
+            String sym = e.substring(0, plus);
+            int k = Integer.parseInt(e.substring(plus + 1));
+            Integer base = SYMTAB.get(sym);
+            if (base == null || base < 0) base = 0;
+            return base + k;
+        }
+        else if (minus > 0)
+        {
+            String sym = e.substring(0, minus);
+            int k = Integer.parseInt(e.substring(minus + 1));
+            Integer base = SYMTAB.get(sym);
+            if (base == null || base < 0) base = 0;
+            return base - k;
+        }
+        else
+        {
+            Integer v = SYMTAB.get(e);
+            return (v == null || v < 0) ? 0 : v;
+        }
+    }
+
+    static int literalIndex(String lit)
+    {
+        for (int i = 0; i < LITS.size(); i++)
+            if (LITS.get(i).equals(lit)) return i + 1;
+        return LITS.size() + 1;
+    }
+
+    // ---------- Printing ----------
+    static void printIC()
+	{
+		System.out.println("***************** INTERMEDIATE CODE *****************");
+		System.out.println("LC     IC");
+
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter("IC.txt"))) {
+			bw.write("***************** INTERMEDIATE CODE *****************\n");
+			bw.write("LC     IC\n");
+
+			for (String s : IC) {
+				System.out.println(s);
+				bw.write(s + "\n");
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	static void printSYMTAB()
+	{
+		System.out.println("\n***************** SYMBOL TABLE *****************");
+		System.out.println(String.format("%-6s %-10s %-8s %s", "Index", "Symbol", "S-Name", "Address"));
+
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter("SYMTAB.txt"))) {
+			bw.write("***************** SYMBOL TABLE *****************\n");
+			bw.write(String.format("%-6s %-10s %-8s %s%n", "Index", "Symbol", "S-Name", "Address"));
+
+			int i = 1;
+			for (Map.Entry<String, Integer> e : SYMTAB.entrySet()) {
+				Integer addr = e.getValue();
+				if (addr != null && addr >= 0) {
+					String line = String.format("%-6d %-10s %-8s %d%n", i++, e.getKey(), SYMNAME.get(e.getKey()), addr);
+					System.out.print(line);
+					bw.write(line);
+				}
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	static void printLITTAB()
+	{
+		System.out.println("\n***************** LITERAL TABLE *****************");
+		System.out.println(String.format("%-6s %-10s %s", "Index", "Literal", "Address"));
+
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter("LITTAB.txt"))) {
+			bw.write("***************** LITERAL TABLE *****************\n");
+			bw.write(String.format("%-6s %-10s %s%n", "Index", "Literal", "Address"));
+
+			int i = 1;
+			for (String lit : LITS) {
+				Integer addr = LITADDR.get(lit);
+				if (addr != null && addr >= 0) {
+					String line = String.format("%-6d %-10s %d%n", i++, lit, addr);
+					System.out.print(line);
+					bw.write(line);
+				}
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	static void printPOOLTAB()
+	{
+		System.out.println("\n***************** LITERAL POOL TABLE *****************");
+		System.out.println(String.format("%-6s %s", "#", "Starting Index"));
+
+		try (BufferedWriter bw = new BufferedWriter(new FileWriter("POOLTAB.txt"))) {
+			bw.write("***************** LITERAL POOL TABLE *****************\n");
+			bw.write(String.format("%-6s %s%n", "#", "Starting Index"));
+
+			int i = 1;
+			for (int start : POOLTAB) {
+				String line = String.format("%-6d %d%n", i++, start);
+				System.out.print(line);
+				bw.write(line);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+

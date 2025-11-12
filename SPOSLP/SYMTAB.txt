@@ -1,0 +1,6 @@
+***************** SYMBOL TABLE *****************
+Index  Symbol     S-Name   Address
+1      N          S1       111
+2      TERM       S3       132
+3      AGAIN      S4       103
+4      RESULT     S6       112

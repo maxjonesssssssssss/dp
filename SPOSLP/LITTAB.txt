@@ -1,0 +1,3 @@
+***************** LITERAL TABLE *****************
+Index  Literal    Address
+1      ='1'       108
